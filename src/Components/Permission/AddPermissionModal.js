@@ -15,6 +15,7 @@ import { useAuthDetails } from "../../Common/cookiesHelper";
 import { toast } from "react-toastify";
 import { ToastifyAlert } from "../../CommonComponents/ToastifyAlert";
 import CircularProgress from "@mui/material/CircularProgress";
+import PasswordShow from "./../../Common/passwordShow";
 const AddPermissionModal = () => {
   const [open, setOpen] = useState(false);
   // const handleOpen = () => setOpen(true);
@@ -38,6 +39,8 @@ const AddPermissionModal = () => {
   };
   const [loader, setLoader] = useState(false);
   const { userTypeData } = useAuthDetails();
+
+  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
 
   const { token, ...userTypeDataAlter } = userTypeData;
   const [states, setStates] = useState([
@@ -186,6 +189,8 @@ const AddPermissionModal = () => {
         }
       } catch (error) {
         ToastifyAlert("Error!", "error");
+        handleCoockieExpire()
+        getUnAutherisedTokenMessage()
       }
       setLoader(false);
   };

@@ -11,6 +11,7 @@ import Edit from "../../Assests/VerifiedMerchant/Edit.svg";
 import Delete from "../../Assests/Category/deleteIcon.svg";
 import DisLike from "../../Assests/VerifiedMerchant/DisLike.svg";
 import DeleteModal from "../../reuseableComponents/DeleteModal";
+import PasswordShow from "./../../Common/passwordShow";
 
 import {
   fetchPermissionData,
@@ -59,6 +60,8 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const PermissionList = () => {
+
+  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
   const navigate = useNavigate();
   const [allpermission, setAllPermission] = useState([]);
 
@@ -79,8 +82,24 @@ const PermissionList = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchPermissionData(userTypeData));
+
+    // dispatch(fetchPermissionData(userTypeData));
+    getfetchpermissionDataData()
   }, []);
+
+  const getfetchpermissionDataData=async()=>{
+    try{
+      let data = {
+        ...userTypeData,
+      };
+      if (data) {
+        await dispatch(fetchPermissionData(data)).unwrap();
+      }
+  }catch(error){
+    handleCoockieExpire()
+    getUnAutherisedTokenMessage()
+  }
+}
 
   useEffect(() => {
     if (
@@ -115,18 +134,24 @@ const PermissionList = () => {
     setDeletePermissionId(id);
     setDeleteModalOpen(true);
   };
-  const confirmDeleteCategory = () => {
-    if (deletePermissionId) {
-      const data = {
-        id: deletePermissionId,
-        ...userTypeData,
-      };
-      if (data) {
-        dispatch(deletePermission(data));
+  const confirmDeleteCategory = async () => {
+  
+    try {
+      if (deletePermissionId) {
+        const data = {
+          id: deletePermissionId,
+          ...userTypeData,
+        };
+        if (data) {
+          await  dispatch(deletePermission(data)).unwrap();
+        }
       }
+      setDeletePermissionId(null);
+      setDeleteModalOpen(false);
+    } catch (error) {
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
     }
-    setDeletePermissionId(null);
-    setDeleteModalOpen(false);
   };
 
   // const handleSearchInputChange = (value) => {
