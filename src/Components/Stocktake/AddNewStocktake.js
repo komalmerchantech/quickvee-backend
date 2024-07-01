@@ -487,7 +487,7 @@ const AddNewStocktake = ({
       return updatedErrors;
     });
   };
-
+  console.log("Product", stocktake_items);
   const handleCreateStocktake = async (stocktakeStatus) => {
     setStocktakeStaus(stocktakeStatus);
     if (stocktake_items.length === 0) {
@@ -507,6 +507,7 @@ const AddNewStocktake = ({
         (sum, item) => sum + Number(item.discrepancy || 0),
         0
       );
+      console.log("total_discrepancy", total_discrepancy);
       const padToTwoDigits = (num) => num.toString().padStart(2, "0");
       const formatDateTime = (date) => {
         const year = date.getFullYear();
@@ -518,13 +519,18 @@ const AddNewStocktake = ({
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
       };
       const datetime = formatDateTime(new Date());
-      const updatedStocktakeItem = stocktake_items?.reduce(
+      const numberParseTofloat = stocktake_items.map((item) => {
+        return { ...item, discrepancy: parseFloat(item.discrepancy) };
+      });
+      console.log("numberParseTofloat", numberParseTofloat);
+      const updatedStocktakeItem = numberParseTofloat?.reduce(
         (acc, curr, index) => {
           acc[index] = curr;
           return acc;
         },
         {}
       );
+      console.log("total_discrepancy inside");
       const stocktakeData = {
         merchant_id: merchant_id, //
         total_qty,
@@ -660,8 +666,9 @@ const AddNewStocktake = ({
                         <StyledTableRow key={index}>
                           <StyledTableCell sx={{ width: "40%" }}>
                             <div style={{ position: "relative", zIndex: 100 }}>
-                              { singleStocktakeState?.stocktake_item[index]
-                                ?.product_id &&  singleStocktakeState?.stocktake_item[index]
+                              {singleStocktakeState?.stocktake_item[index]
+                                ?.product_id &&
+                              singleStocktakeState?.stocktake_item[index]
                                 ?.product_id === product.product_id ? (
                                 product?.product_name
                               ) : (
@@ -686,7 +693,7 @@ const AddNewStocktake = ({
                                 />
                               )}
                               {errorMessages[index]?.product_name && (
-                                <div className="error">
+                                <div className="error-message">
                                   {errorMessages[index].product_name}
                                 </div>
                               )}
@@ -716,26 +723,22 @@ const AddNewStocktake = ({
                           <StyledTableCell>{product.upc}</StyledTableCell>
 
                           <StyledTableCell>
-                            
                             {singleStocktakeState?.stocktake_item.length ===
-                              1 && 
-
-                              (singleStocktakeState?.stocktake_item[0]
-                              ?.variant.length > 0 ? 
-
-                              singleStocktakeState?.stocktake_item[0]
-                              ?.variant_id === product?.variant_id 
-                              :
-                            singleStocktakeState?.stocktake_item[0]
-                              ?.product_id === product?.product_id ) ? 
-                              (
-                              null
-                            ) : <img
-                            src={DeleteIcon}
-                            onClick={() => handleDeleteProduct(index)}
-                            alt="Delete Icon"
-                            className="cursor-pointer"
-                          />}
+                              1 &&
+                            (singleStocktakeState?.stocktake_item[0]?.variant
+                              .length > 0
+                              ? singleStocktakeState?.stocktake_item[0]
+                                  ?.variant_id === product?.variant_id
+                              : singleStocktakeState?.stocktake_item[0]
+                                  ?.product_id ===
+                                product?.product_id) ? null : (
+                              <img
+                                src={DeleteIcon}
+                                onClick={() => handleDeleteProduct(index)}
+                                alt="Delete Icon"
+                                className="cursor-pointer"
+                              />
+                            )}
                           </StyledTableCell>
                         </StyledTableRow>
                       </>

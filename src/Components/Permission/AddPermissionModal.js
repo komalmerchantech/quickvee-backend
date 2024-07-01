@@ -40,7 +40,6 @@ const AddPermissionModal = () => {
   const [loader, setLoader] = useState(false);
   const { userTypeData } = useAuthDetails();
 
-  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
 
   const { token, ...userTypeDataAlter } = userTypeData;
   const [states, setStates] = useState([
@@ -77,6 +76,7 @@ const AddPermissionModal = () => {
     permission: "",
     sub_permission: "",
   });
+  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
 
   //Handle Select Permission's
   const handlePermissionChange = (e) => {
@@ -188,7 +188,8 @@ const AddPermissionModal = () => {
           ToastifyAlert(msg, "warn");
         }
       } catch (error) {
-        ToastifyAlert("Error!", "error");
+        // ToastifyAlert("Error!", "error");
+        console.error("Error submitting data:", error);
         handleCoockieExpire()
         getUnAutherisedTokenMessage()
       }

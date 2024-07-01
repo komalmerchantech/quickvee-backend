@@ -17,7 +17,6 @@ import { useAuthDetails } from "../../Common/cookiesHelper";
 import { toast } from "react-toastify";
 import { ToastifyAlert } from "../../CommonComponents/ToastifyAlert";
 import PasswordShow from "./../../Common/passwordShow";
-
 const EditPermissionModal = ({ selected }) => {
   const [open, setOpen] = useState(false);
   // const handleOpen = () => setOpen(true);
@@ -65,7 +64,7 @@ const EditPermissionModal = ({ selected }) => {
   const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
 
   const { token, ...userTypeDataAlter } = userTypeData;
-
+  
   const [states, setStates] = useState([
     "Select",
     "Register",
@@ -241,8 +240,7 @@ const EditPermissionModal = ({ selected }) => {
       console.error("Error submitting data:", error);
       handleCoockieExpire()
       getUnAutherisedTokenMessage()
-
-      ToastifyAlert("Error!", "error");
+      // ToastifyAlert("Error!", "error");
       // Handle errors as needed
     }
     // }

@@ -193,5 +193,6 @@ export default function ProfitMarginReportLogic() {
     handleLoadMore,
     laodMoreData,
     loader,
+    setsearchProduct
   };
 }

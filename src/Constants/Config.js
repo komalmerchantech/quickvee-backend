@@ -110,11 +110,11 @@ module.exports = Object.freeze({
   DELETE_PO_ITEM: "Purchase_ordersReactApi/delete_po_item",
 
   // Taxes API Calls
-  ADD_TAXES: "Taxesapi/add_Tax",
-  UPDATE_TAXES: "Taxesapi/update_Tax",
-  LIST_ALL_TAXES: "Taxesapi/Taxes_list",
-  DELETE_SINGLE_TAXE: "Taxesapi/delete_tax",
-  TAXE_CATEGORY_LIST: "Taxesapi/Taxes_category_list",
+  ADD_TAXES: "Taxes_react_api/add_Tax",
+  UPDATE_TAXES: "Taxes_react_api/update_Tax",
+  LIST_ALL_TAXES: "Taxes_react_api/Taxes_list",
+  DELETE_SINGLE_TAXE: "Taxes_react_api/delete_tax",
+  TAXE_CATEGORY_LIST: "Taxes_react_api/Taxes_category_list",
 
   // All Reports API
   CHECKID_VARIFICATION_REPORT_LIST:
@@ -318,6 +318,7 @@ module.exports = Object.freeze({
 
   VENDOR_UPDATE_DETAILS: "vendor_api/update_details",
   CHECK_EXIST_STORENAME: "UserController/check_merchant",
+  CHECK_EXISTING_PIN: "StoreReact_setting_api/check_pin",
 });
 
 // All api calls are initialized in this component for this application

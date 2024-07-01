@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchSalePersonData } from "../../../Redux/features/SalesByPerson/SalesByPersonSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import OrderSummaryDetails from "./MainOrderSumaaryDetails/OrderSummaryDetails";
 import { useAuthDetails } from "../../../Common/cookiesHelper";
 
@@ -24,13 +24,15 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: "#253338",
     color: theme.palette.common.white,
+    fontFamily: "CircularSTDBook !important",
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
-    color: "#818181",
+    fontFamily: "CircularSTDMedium",
   },
   [`&.${tableCellClasses.table}`]: {
     fontSize: 14,
+    ontFamily: "CircularSTDMedium",
   },
 }));
 
@@ -44,7 +46,17 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   // },
 }));
 // ==================== END TABLE STYLE ADDED ===================================================
-
+const orderType = (type)=>{
+  if(type === "Online Order"){
+    return "Online"
+  }
+  if(type === "Store Order"){
+    return "Offline"
+  }
+  else{
+    return type
+  }
+}
 const SalesPersonReport = (props) => {
   const {
     LoginGetDashBoardRecordJson,
@@ -61,15 +73,16 @@ const SalesPersonReport = (props) => {
   );
   let merchant_id = LoginGetDashBoardRecordJson?.data?.merchant_id;
   const [totalRecord, setTotalRecord] = React.useState("");
-
+  const navigate = useNavigate()
   useEffect(() => {
+  
     if (props && props.selectedDateRange) {
       let data = {
         merchant_id,
         start_date: props.selectedDateRange.start_date,
         end_date: props.selectedDateRange.end_date,
         order_typ: props.OrderTypeData,
-        order_env: props.OrderSourceData,
+        order_env: orderType(props.OrderSourceData),
         employee_id: props.SelectEmpListData,
         ...userTypeData,
       };
@@ -201,12 +214,12 @@ const SalesPersonReport = (props) => {
                       {items?.map((SalesData, index) => (
                         <StyledTableRow key={index}>
                           <StyledTableCell sx={{ width: "33%" }}>
-                            <Link
+                            {/* <Link
                               to={`/order/store-reporting/order-summary/${merchant_id}/${SalesData.order_id}`}
                               target="_blank"
-                            >
-                              <p>{SalesData.order_id}</p>
-                            </Link>
+                            > */}
+                              <span className="cursor-pointer text-[#0A64F9]" onClick={()=>navigate(`/order/store-reporting/order-summary/${merchant_id}/${SalesData.order_id}`)}>{SalesData.order_id}</span>
+                            {/* </Link> */}
                           </StyledTableCell>
                           <StyledTableCell
                             sx={{

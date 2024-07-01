@@ -195,10 +195,8 @@ const Validation = () => {
       updatedErrors.pin = "Pin is required";
     } else if (emoji.test(pin)) {
       updatedErrors.pin = "Emoji not allowed";
-    } else if (pin.length !== 4) {
-      updatedErrors.pin = "Max 4 number should be enter";
-    } else if (!Numberval.test(pin)) {
-      updatedErrors.pin = "Pin only contain number ";
+    } else if (pin.length !== 4 && pin.length !== 5) {
+      updatedErrors.pin = "Invalid Pin";
     } else if (checkPin(pin, employeeList)) {
       updatedErrors.pin = "Pin is already registered ";
     } else {

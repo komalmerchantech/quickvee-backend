@@ -12,6 +12,9 @@ import { BASE_URL, ADD_TAXES } from "../../../Constants/Config";
 import BasicTextFields from "../../../reuseableComponents/TextInputField";
 import TextField from "@mui/material/TextField";
 import { ToastifyAlert } from "../../../CommonComponents/ToastifyAlert";
+import CircularProgress from "@mui/material/CircularProgress";
+import PasswordShow from "../../../Common/passwordShow";
+
 const AddTaxesModal = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -21,11 +24,15 @@ const AddTaxesModal = () => {
       percent: "",
     });
     setErrorMessage("")
+    setErrorTitleMessage("")
+    setErrorPerMessage("")
     setOpen(false);
   }
   const [errorMessage, setErrorMessage] = useState("");
   const [errorTitleMessage, setErrorTitleMessage] = useState("");
-
+  const [errorPerMessage, setErrorPerMessage] = useState("");
+  const [loader, setLoader] = useState(false);
+  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
   const dispatch = useDispatch();
 
   const myStyles = {
@@ -55,15 +62,42 @@ const AddTaxesModal = () => {
     if (name === "title"){
       if (regex.test(value)) {
         setTaxes({ ...taxes, title: value });
+        setErrorTitleMessage(value ? "" : "*Please enter title");
+        setErrorMessage("")
       }
     }else{
-      setTaxes((preValue) => {
-        return {
-          ...preValue,
-          // [name]: value,
-          [name]: name === "percent" ? formatPercent(value) : value,
-        };
-      });
+
+      let fieldValue;
+      fieldValue = value
+        // Remove extra dots and ensure only one dot exists at most
+        .replace(/[^\d.]/g, "") // Allow digits and dots only
+        .replace(/^(\d*\.)(.*)\./, "$1$2") // Remove extra dots
+        .replace(/^(\d*\.\d*)(.*)\./, "$1$2"); // Remove extra dots after the decimal point
+      let inputStr = fieldValue.replace(/\D/g, "");
+      inputStr = inputStr.replace(/^0+/, "");
+
+      if (inputStr.length == "") {
+        fieldValue = "0.00";
+      } else if (inputStr.length === 1) {
+        fieldValue = "0.0" + inputStr;
+      } else if (inputStr.length === 2) {
+        fieldValue = "0." + inputStr;
+      } else {
+        fieldValue =
+          inputStr.slice(0, inputStr.length - 2) + "." + inputStr.slice(-2);
+      }
+      if (fieldValue.trim() === "") {
+        setTaxes({ ...taxes, title: "" });
+      } else {
+        setTaxes((preValue) => {
+          return {
+            ...preValue,
+            [name]: name === "percent" ? formatPercent(fieldValue) : fieldValue,
+          };
+        });
+        setErrorPerMessage("");
+      }
+      setErrorPerMessage(value ? "" : "*Please enter Percent");
 
     }
 
@@ -97,6 +131,12 @@ const AddTaxesModal = () => {
     formData.append("token_id", userTypeData?.token_id);
     formData.append("login_type", userTypeData?.login_type);
 
+    if(taxes.title === "" || taxes.percent === ""){
+      setErrorTitleMessage(taxes.title ? "" : "*Please enter title");
+      setErrorPerMessage(taxes.percent ? "" : "*Please enter Percent");
+      return;
+    }
+    setLoader(true);
     try {
       const res = await axios.post(BASE_URL + ADD_TAXES, formData, {
         headers: { "Content-Type": "multipart/form-data",Authorization: `Bearer ${userTypeData?.token}`, },
@@ -132,7 +172,10 @@ const AddTaxesModal = () => {
       }
     } catch (error) {
       console.error("API Error:", error);
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
     }
+    setLoader(false);
   };
 
   return (
@@ -184,13 +227,15 @@ const AddTaxesModal = () => {
                     placeholder="Enter Title"
                     name="title"
                     type="text"
-                    required={true}
+                    // required={true}
                   />
-                {errorMessage && (
-                  <span className="error-message" style={{ color: "red" }}>
-                    {errorMessage}
-                  </span>
-                )}
+                  {errorMessage && (
+                      <p className="error-message">{errorMessage}</p>
+                    )
+                  }
+                  {errorTitleMessage && (
+                    <p className="error-message">{errorTitleMessage}</p>
+                  )}
 
                 <div className="q-add-categories-single-input mt-4">
                   <label for="Percentage">Percentage</label>
@@ -216,13 +261,18 @@ const AddTaxesModal = () => {
                     placeholder="00.00"
                     variant="outlined"
                     size="small"
-                    required={true}
+                    // required={true}
                     onKeyPress={handleKeyPress}
                   />
+                  {errorPerMessage && (
+                    <p className="error-message ">{errorPerMessage}</p>
+                  )}
               </div>
 
               <div className="q-add-categories-section-middle-footer">
-                <button className="quic-btn quic-btn-save">Save</button>
+                <button className="quic-btn quic-btn-save attributeUpdateBTN"  disabled={loader}>
+                  { loader ? <><CircularProgress color={"inherit"} className="loaderIcon" width={15} size={15}/> Add</> : "Add"}
+                  </button>
 
                 <button
                   onClick={() => handleClose()}

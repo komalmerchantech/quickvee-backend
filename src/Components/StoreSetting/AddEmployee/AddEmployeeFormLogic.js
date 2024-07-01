@@ -5,7 +5,11 @@ import { useDispatch } from "react-redux";
 import { addToEmployeeList } from "../../../Redux/features/StoreSettings/AddEmployee/AddEmployeeSlice";
 import Validation from "../../../Constants/Validation";
 // import { useNavigate } from "react-router-dom";
-import { BASE_URL, ADDEDIT_EMPLOYEE } from "../../../Constants/Config";
+import {
+  BASE_URL,
+  ADDEDIT_EMPLOYEE,
+  CHECK_EXISTING_PIN,
+} from "../../../Constants/Config";
 import { useAuthDetails } from "../../../Common/cookiesHelper";
 import { ToastifyAlert } from "../../../CommonComponents/ToastifyAlert";
 
@@ -59,6 +63,63 @@ const AddEmployeeFormLogic = ({ employeeList }) => {
       state: "",
     },
   });
+  const handleKeyPress = (e) => {
+    // Allow only numeric characters (key codes 48 to 57) and backspace (key code 8)
+    if ((e.charCode < 48 || e.charCode > 57) && e.charCode !== 8) {
+      e.preventDefault();
+    }
+  };
+  // ===================== PIN CHECK
+  const checkValidPin = async (data) => {
+    const { token, ...newData } = userTypeData;
+    const dataNew = { ...data, ...newData };
+    try {
+      const response = await axios.post(
+        BASE_URL + CHECK_EXISTING_PIN,
+        dataNew,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return response.data; // Assuming this data indicates whether email is valid or not
+    } catch (error) {
+      console.error("Error validating email:", error);
+      throw error;
+    }
+  };
+  // ================== PIN CHECK
+
+  // const handleBlur = async (name) => {
+  //   if (name == "pin") {
+  //     if (merchant_id !== "" && !!merchant_id && values.pin !== "") {
+  //       try {
+  //         let data = { merchant_id: merchant_id, pin: values.pin };
+  //         let response = await checkValidPin(data);
+  //         if (response.status == true) {
+  //           setValues((prevValues) => ({
+  //             ...prevValues,
+  //             errors: {
+  //               ...prevValues.errors,
+  //               pin: "",
+  //             },
+  //           }));
+  //         } else {
+  //           setValues((prevValues) => ({
+  //             ...prevValues,
+  //             errors: {
+  //               ...prevValues.errors,
+  //               pin: "Pin is Exists",
+  //             },
+  //           }));
+  //         }
+  //       } catch (error) {}
+  //     }
+  //   }
+  // };
 
   const handleAddEmployeeInput = async (event) => {
     let { errors } = values;
@@ -235,6 +296,8 @@ const AddEmployeeFormLogic = ({ employeeList }) => {
     showModal,
     setShowModal,
     scrollRef,
+    handleKeyPress,
+    // handleBlur,
   };
 };
 

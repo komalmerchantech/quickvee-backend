@@ -32,6 +32,7 @@ import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableRow from "@mui/material/TableRow";
+import PasswordShow from "./../../Common/passwordShow";
 
 const StyledTable = styled(Table)(({ theme }) => ({
   padding: 2, // Adjust padding as needed
@@ -78,28 +79,25 @@ const PermissionList = () => {
 
   const AllPermissionDataState = useSelector((state) => state.permissionRed);
   const { userTypeData } = useAuthDetails();
-
   const dispatch = useDispatch();
 
-  useEffect(() => {
-
-    // dispatch(fetchPermissionData(userTypeData));
-    getfetchpermissionDataData()
+  useEffect(  () => {
+   
+    getpermissionData()
   }, []);
-
-  const getfetchpermissionDataData=async()=>{
-    try{
+  const getpermissionData = async() =>{
+    try {
       let data = {
         ...userTypeData,
       };
-      if (data) {
-        await dispatch(fetchPermissionData(data)).unwrap();
+      if(data){
+        await dispatch(fetchPermissionData(userTypeData)).unwrap();
       }
-  }catch(error){
-    handleCoockieExpire()
-    getUnAutherisedTokenMessage()
+    } catch (error) {
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
+    }
   }
-}
 
   useEffect(() => {
     if (
@@ -135,7 +133,7 @@ const PermissionList = () => {
     setDeleteModalOpen(true);
   };
   const confirmDeleteCategory = async () => {
-  
+   
     try {
       if (deletePermissionId) {
         const data = {
@@ -143,7 +141,7 @@ const PermissionList = () => {
           ...userTypeData,
         };
         if (data) {
-          await  dispatch(deletePermission(data)).unwrap();
+         await dispatch(deletePermission(data)).unwrap();
         }
       }
       setDeletePermissionId(null);

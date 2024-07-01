@@ -12,7 +12,8 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-
+import { SortTableItemsHelperFun } from "../../../helperFunctions/SortTableItemsHelperFun";
+import sortIcon from "../../../Assests/Category/SortingW.svg";
 const StyledTable = styled(Table)(({ theme }) => ({
   padding: 2, // Adjust padding as needed
 }));
@@ -64,27 +65,43 @@ const EmployeelistReport = () => {
     fetchData();
   }, [dispatch]);
 
-  useEffect(() => {
-    if (
-      !AllEmployeeListState.loading &&
-      AllEmployeeListState.employeeListData
-    ) {
-      setAllEmployeeData(AllEmployeeListState.employeeListData);
-    }
-  }, [AllEmployeeListState.loading, AllEmployeeListState.employeeListData]);
+  // useEffect(() => {
+  //   if (
+  //     !AllEmployeeListState.loading &&
+  //     AllEmployeeListState.employeeListData
+  //   ) {
+  //     setAllEmployeeData(AllEmployeeListState.employeeListData);
+  //   }
+  // }, [AllEmployeeListState.loading, AllEmployeeListState.employeeListData]);
 
   useEffect(() => {
     if (
       !AllEmployeeListState.loading &&
       AllEmployeeListState.employeeListData
     ) {
+      const updatedData = AllEmployeeListState?.employeeListData?.map(
+        (data) => {
+          const fullName = `${data?.f_name} ${data?.l_name}`;
+          return { ...data, fullName: fullName };
+        }
+      );
       // console.log(AllInventoryAccessState.employeeListData)
-      setAllEmployeeData(AllEmployeeListState.employeeListData);
+      setAllEmployeeData(updatedData);
     }
-  }, [AllEmployeeListState.loading]);
+  }, [AllEmployeeListState.loading,AllEmployeeListState.employeeListData]);
 
   // console.log(employeeData)
-
+  const [sortOrder, setSortOrder] = useState("asc");
+  const sortByItemName = (type, name) => {
+    const { sortedItems, newOrder } = SortTableItemsHelperFun(
+      employeeData,
+      type,
+      name,
+      sortOrder
+    );
+    setAllEmployeeData(sortedItems);
+    setSortOrder(newOrder);
+  };
   return (
     <>
       <Grid container className="box_shadow_div">
@@ -102,20 +119,43 @@ const EmployeelistReport = () => {
                   aria-label="customized table"
                 >
                   <TableHead>
-                    <StyledTableCell>Employee Name</StyledTableCell>
-                    <StyledTableCell>PIN</StyledTableCell>
+                    <StyledTableCell>
+                      <button
+                        className="flex items-center"
+                        onClick={() => sortByItemName("str", "fullName")}
+                      >
+                        <p>Employee Name</p>
+                        <img src={sortIcon} alt="" className="pl-1" />
+                      </button>
+                    </StyledTableCell>
+                    <StyledTableCell>
+                    <button
+                        className="flex items-center"
+                        onClick={() => sortByItemName("num", "pin")}
+                      >
+                        <p>PIN</p>
+                        <img src={sortIcon} alt="" className="pl-1" />
+                      </button>
+                      </StyledTableCell>
                     <StyledTableCell>Contact</StyledTableCell>
-                    <StyledTableCell>Email</StyledTableCell>
-                    <StyledTableCell>Address</StyledTableCell>
+                    <StyledTableCell>
+                    <button
+                        className="flex items-center"
+                        onClick={() => sortByItemName("str", "email")}
+                      >
+                        <p>Email</p>
+                        <img src={sortIcon} alt="" className="pl-1" />
+                      </button>
+                      </StyledTableCell>
+                    <StyledTableCell>
+                      Address</StyledTableCell>
                   </TableHead>
                   <TableBody>
                     {employeeData && employeeData?.length >= 1 ? (
                       employeeData?.map((employee, index) => (
                         <StyledTableRow key={index}>
                           <StyledTableCell>
-                            <p>
-                              {employee?.f_name} {employee?.l_name}
-                            </p>
+                            <p>{employee?.fullName}</p>
                           </StyledTableCell>
                           <StyledTableCell>
                             <p>{employee?.pin}</p>
@@ -127,9 +167,19 @@ const EmployeelistReport = () => {
                             <p>{employee?.email}</p>
                           </StyledTableCell>
                           <StyledTableCell>
-                            <p> {employee ? [employee.address, employee.city, employee.state, employee.zipcode]
-                                .filter(Boolean)
-                                .join(', ')  : ""}</p>
+                            <p>
+                              {" "}
+                              {employee
+                                ? [
+                                    employee.address,
+                                    employee.city,
+                                    employee.state,
+                                    employee.zipcode,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(", ")
+                                : ""}
+                            </p>
                           </StyledTableCell>
                         </StyledTableRow>
                       ))

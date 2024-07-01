@@ -12,6 +12,7 @@ import DraggableTable from "../../../reuseableComponents/DraggableTable";
 import { useSelector, useDispatch } from "react-redux";
 import { ToastifyAlert } from "../../../CommonComponents/ToastifyAlert";
 import DeleteModal from "../../../reuseableComponents/DeleteModal";
+import PasswordShow from "../../../Common/passwordShow";
 
 const TaxesDetail = () => {
   const [alltaxes, setalltaxes] = useState([]);
@@ -21,14 +22,32 @@ const TaxesDetail = () => {
   let AuthDecryptDataDashBoardJSONFormat = LoginGetDashBoardRecordJson;
   const merchant_id = AuthDecryptDataDashBoardJSONFormat?.data?.merchant_id;
   useEffect(() => {
-    let data = {
-      merchant_id: merchant_id,
-      ...userTypeData,
-    };
-    if (data) {
-      dispatch(fetchtaxesData(data));
-    }
+    // let data = {
+    //   merchant_id: merchant_id,
+    //   ...userTypeData,
+    // };
+    // if (data) {
+    //   dispatch(fetchtaxesData(data));
+    // }
+    getfetchtaxesDataData()
   }, []);
+
+  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
+
+  const getfetchtaxesDataData=async()=>{
+    try{
+      let data = {
+        merchant_id: merchant_id,
+        ...userTypeData,
+      };
+      if (data) {
+        await dispatch(fetchtaxesData(data)).unwrap();
+      }
+    }catch(error){
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
+    }
+  }
 
   useEffect(() => {
     if (!AlltaxesDataState.loading && AlltaxesDataState.taxesData) {

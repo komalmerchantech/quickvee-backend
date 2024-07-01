@@ -43,7 +43,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const StocktakeReport = ({ setVisible }) => {
-  
   const [singleStocktakeState, setSingleStocktakeState] = useState();
 
   const { LoginGetDashBoardRecordJson, userTypeData } = useAuthDetails();
@@ -113,7 +112,7 @@ const StocktakeReport = ({ setVisible }) => {
       ToastifyAlert("Error voiding stocktake. Please try again.", "error");
     }
     // setVisible("StocktakeList");
-    navigate(-1)
+    navigate(-1);
   };
 
   const handlePrint = () => {
@@ -131,7 +130,7 @@ const StocktakeReport = ({ setVisible }) => {
               <span
                 onClick={() => {
                   // setVisible("StocktakeList");
-                  navigate(-1)
+                  navigate(-1);
                 }}
                 className="text-center items-center"
               >
@@ -141,7 +140,6 @@ const StocktakeReport = ({ setVisible }) => {
               </span>
             </div>
           </Grid>
-        
         </Grid>
 
         <Grid container spacing={3} sx={{ py: 2.5 }}>
@@ -165,7 +163,12 @@ const StocktakeReport = ({ setVisible }) => {
 
                       <StyledTableCell>{item.discrepancy}</StyledTableCell>
 
-                      <StyledTableCell>${priceFormate((parseFloat(item.discrepancy_cost)).toFixed(2))}</StyledTableCell>
+                      <StyledTableCell>
+                        $
+                        {priceFormate(
+                          parseFloat(item.discrepancy_cost).toFixed(2)
+                        )}
+                      </StyledTableCell>
 
                       <StyledTableCell>{item.upc}</StyledTableCell>
                     </StyledTableRow>
@@ -213,7 +216,7 @@ const StocktakeReport = ({ setVisible }) => {
                 <button
                   onClick={() => {
                     // setVisible("StocktakeList");
-                    navigate(-1)
+                    navigate(-1);
                   }}
                   className="quic-btn quic-btn-cancle"
                 >

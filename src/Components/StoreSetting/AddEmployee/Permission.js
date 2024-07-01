@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../../../Styles/StoreSetting.css";
 import "../../../Styles/Settings/SystemAccess.css";
 import "../../../Styles/Common.css";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -18,6 +18,7 @@ import Loader from "../../../CommonComponents/Loader";
 const Permission = ({ EmployeeId, setVisible }) => {
   const location = useLocation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [employeedata, setemployeedata] = useState([]);
   const [permissionList, setpermissionList] = useState([]);
   const employee_id = EmployeeId;
@@ -101,6 +102,11 @@ const Permission = ({ EmployeeId, setVisible }) => {
   useEffect(() => {
     MyComponent(permissionList);
   }, [permissionList, employeedata]);
+
+  const RedirectCancelButton = () => {
+    setVisible("EmployeeList");
+    navigate(`/store-settings/addemployee`);
+  };
 
   return (
     // fro laoder Start
@@ -327,7 +333,10 @@ const Permission = ({ EmployeeId, setVisible }) => {
                     Update
                   </button>
 
-                  <Link to={`/store-settings/addemployee`}>
+                  <Link
+                    onClick={() => RedirectCancelButton()}
+                    // to={`/store-settings/addemployee`}
+                  >
                     <button className="quic-btn quic-btn-cancle">Cancel</button>
                   </Link>
                 </div>

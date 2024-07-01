@@ -3,7 +3,17 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchCheckIDVerifyData } from "../../../Redux/features/Reports/CheckIDVerify/CheckIDVerifySlice";
 import { useAuthDetails } from "../../../Common/cookiesHelper";
-
+const orderEnv = (type)=>{
+  if(type === "Online Order"){
+    return "Online";
+  }
+  if(type === "Store Order"){
+    return "Offline";
+  }
+  else{
+    return type;
+  }
+}
 const CheckIDVerifyList = (props) => {
   const dispatch = useDispatch();
   const {
@@ -25,7 +35,7 @@ const CheckIDVerifyList = (props) => {
         start_date: props.selectedDateRange.start_date,
         end_date: props.selectedDateRange.end_date,
         order_typ: props.OrderTypeData,
-        order_env: props.OrderSourceData,
+        order_env:orderEnv(props.OrderSourceData),
         ...userTypeData,
       };
       if (data) {

@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Grid } from "@mui/material";
 import SelectDropDown from "../../../reuseableComponents/SelectDropDown";
 import BasicTextFields from "../../../reuseableComponents/TextInputField";
 import ProfitMarginReportLogic from "./profitMarginReportLogic";
 import Pagination from "./pagination";
+import { SortTableItemsHelperFun } from "../../../helperFunctions/SortTableItemsHelperFun";
 export default function ProfitMarginReport() {
   const {
     handleChangeInventory,
@@ -17,7 +18,23 @@ export default function ProfitMarginReport() {
     handleLoadMore,
     laodMoreData,
     loader,
+    setsearchProduct,
   } = ProfitMarginReportLogic();
+
+
+  const [sortOrder, setSortOrder] = useState("asc"); // "asc" for ascending, "desc" for descending
+
+  const sortByItemName = (type, name) => {
+    const { sortedItems, newOrder } = SortTableItemsHelperFun(
+      searchProduct,
+      type,
+      name,
+      sortOrder
+    );
+    setsearchProduct(sortedItems);
+    setSortOrder(newOrder);
+  };
+
   return (
     <>
       <Grid container className="box_shadow_div">
@@ -97,6 +114,7 @@ export default function ProfitMarginReport() {
             handleLoadMore={handleLoadMore}
             laodMoreData={laodMoreData}
             loader={loader}
+            sortByItemName={sortByItemName}
           />
         </Grid>
       </Grid>
