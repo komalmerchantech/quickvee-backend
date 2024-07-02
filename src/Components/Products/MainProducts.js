@@ -37,6 +37,7 @@ const MainProducts = () => {
 
   // Function to update the category ID, which will be passed to the child
   const handleCategoryChange = (catId) => {
+    setSearchId("");
     setCategoryId(catId);
   };
 
@@ -90,6 +91,7 @@ const MainProducts = () => {
         setdel_picDropdownVisible(false);
         if (window.confirm("Are you sure you want to update?")) {
           dispatch(emptyProduct([]));
+          setSearchId("");
           let type_date = {
             merchant_id: LoginGetDashBoardRecordJson?.data?.merchant_id,
             id: option.id,
@@ -104,6 +106,7 @@ const MainProducts = () => {
                     merchant_id: LoginGetDashBoardRecordJson?.data?.merchant_id,
                     category_id: categoryId === "All" ? "all" : categoryId, 
                     show_status: selectedStatus,
+                    name: searchId,
                     listing_type: selectedListingTypeValue,
                     offset: 0,
                     limit: 10,
@@ -127,6 +130,7 @@ const MainProducts = () => {
 
         break;
       case "status":
+        setSearchId("")
         setSelectedStatus(option.id);
         setSelectedStatusValue(option.title);
         setTransactionDropdownVisible(false);
@@ -135,6 +139,7 @@ const MainProducts = () => {
           merchant_id: LoginGetDashBoardRecordJson?.data?.merchant_id,
           category_id: categoryId === "All" ? "all" : categoryId,
           show_status: option.id,
+          name: searchId,
           listing_type: selectedListingTypeValue,
           offset: 0,
           limit: 10,
@@ -157,10 +162,12 @@ const MainProducts = () => {
 
         }
         setSelectedListingTypeValue(option);
+        setSearchId("")
         let listing_data = {
           merchant_id: LoginGetDashBoardRecordJson?.data?.merchant_id,
           category_id: categoryId === "All" ? "all" : categoryId,
           show_status: selectedStatus,
+          name: searchId, 
           listing_type: option.id,
           offset: 0,
           limit: 10,

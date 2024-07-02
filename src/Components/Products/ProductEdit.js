@@ -24,7 +24,6 @@ const ProductEdit = () => {
     e.preventDefault(); // Prevent form submission
 
     // Add your logic to update the product data
-    console.log("Product data updated:", productData);
   };
 
   const categories = [

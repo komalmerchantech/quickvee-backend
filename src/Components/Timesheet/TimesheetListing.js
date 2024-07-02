@@ -14,7 +14,7 @@ import Grid from "@mui/material/Grid";
 
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-
+import CircularProgress from "@mui/material/CircularProgress";
 import { Box, Modal } from "@mui/material";
 import {
   fetchtimeSheetData,
@@ -33,6 +33,7 @@ import { useAuthDetails } from "./../../Common/cookiesHelper";
 import { priceFormate } from "../../hooks/priceFormate";
 import DeleteModal from "../../reuseableComponents/DeleteModal";
 import { ToastifyAlert } from "../../CommonComponents/ToastifyAlert";
+import PasswordShow from "../../Common/passwordShow";
 
 const TimesheetListing = ({ data }) => {
   const dispatch = useDispatch();
@@ -44,14 +45,28 @@ const TimesheetListing = ({ data }) => {
     useAuthDetails();
   let AuthDecryptDataDashBoardJSONFormat = LoginGetDashBoardRecordJson;
   const merchant_id = AuthDecryptDataDashBoardJSONFormat?.data?.merchant_id;
-
+  const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
   useEffect(() => {
-    if (!data.merchant_id) {
-      console.log("empty");
-    } else {
-      dispatch(fetchtimeSheetData(data));
-    }
+    // if (!data.merchant_id) {
+    //   console.log("empty");
+    // } else {
+    //   dispatch(fetchtimeSheetData(data));
+    // }
+    getfetchtimeSheetData();
   }, [dispatch, data]);
+  const [loader, setLoader] = useState(false);
+  const getfetchtimeSheetData = async () => {
+    try {
+      if (!data.merchant_id) {
+        console.log("empty");
+      } else {
+        await dispatch(fetchtimeSheetData(data)).unwrap();
+      }
+    } catch (error) {
+      handleCoockieExpire();
+      getUnAutherisedTokenMessage();
+    }
+  };
 
   // console.log("timesheet",timesheet)
 
@@ -70,8 +85,17 @@ const TimesheetListing = ({ data }) => {
       try {
         const response = await axios.post(
           BASE_URL + EMPLOYEE_LIST,
-          { merchant_id: merchant_id,token_id:userTypeData?.token_id,login_type:userTypeData?.login_type },
-          { headers: { "Content-Type": "multipart/form-data",Authorization: `Bearer ${userTypeData?.token}` } }
+          {
+            merchant_id: merchant_id,
+            token_id: userTypeData?.token_id,
+            login_type: userTypeData?.login_type,
+          },
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${userTypeData?.token}`,
+            },
+          }
         );
 
         const EmpList = response.data.result;
@@ -80,11 +104,15 @@ const TimesheetListing = ({ data }) => {
           id: empdata.id,
           // title: empdata.f_name + " " + empdata.l_name,
           // title: (empdata.f_name ? empdata.f_name : "") + " " + (empdata.l_name ? empdata.l_name : ""),
-          title: empdata.l_name ? `${empdata.f_name} ${empdata.l_name}` : empdata.f_name
+          title: empdata.l_name
+            ? `${empdata.f_name} ${empdata.l_name}`
+            : empdata.f_name,
           // title: empdata.l_name && empdata.l_name !== "" ? `${empdata.f_name} ${empdata.l_name}` : empdata.f_name
         }));
         setemployeeList(mappedOptions);
       } catch (error) {
+        handleCoockieExpire();
+        getUnAutherisedTokenMessage();
         console.error("Error fetching Employee List:", error);
       }
     };
@@ -334,7 +362,10 @@ const TimesheetListing = ({ data }) => {
       setDateEndTimeError("");
     }
 
-    if (dateStartError === "Invalid date. Please select a valid date." || dateEndError === "Invalid date. Please select a valid date." ){
+    if (
+      dateStartError === "Invalid date. Please select a valid date." ||
+      dateEndError === "Invalid date. Please select a valid date."
+    ) {
       return;
     }
 
@@ -354,6 +385,7 @@ const TimesheetListing = ({ data }) => {
     // }
 
     // return
+    setLoader(true);
     try {
       const response = await axios.post(
         `${BASE_URL}${ADD_TIME_SHEET}`,
@@ -388,8 +420,11 @@ const TimesheetListing = ({ data }) => {
         setShowModal(true);
       }
     } catch (error) {
+      handleCoockieExpire();
+      getUnAutherisedTokenMessage();
       console.error("API Error:", error);
     }
+    setLoader(false);
   };
 
   // const updateTimesheet = (value,type) => {
@@ -525,7 +560,7 @@ const TimesheetListing = ({ data }) => {
     for (const [key, value] of formData.entries()) {
       console.log(`${key}: ${value}`);
     }
-
+    setLoader(true)
     try {
       const response = await axios.post(
         `${BASE_URL}${ADD_TIME_BREAK}`,
@@ -560,8 +595,11 @@ const TimesheetListing = ({ data }) => {
         setShowModalBreak(true);
       }
     } catch (error) {
+      handleCoockieExpire();
+      getUnAutherisedTokenMessage();
       console.error("API Error:", error);
     }
+    setLoader(false)
   };
   // for Break Modal End
 
@@ -579,10 +617,15 @@ const TimesheetListing = ({ data }) => {
   const openModalViewBreak = (title, data) => {
     setEmployeeName(title);
     fetchBreakDetails(data);
-    setEmployeeWorkDate(data.attendance_date);
-    setEmployeeWorkDateOUT(data.out_date);
-    setEmployeeTimeIn(formatTime(data.check_in_time));
-    setEmployeeTimeOut(formatTime(data.check_out_time));
+    setEmployeeWorkDate(data?.attendance_date);
+    setEmployeeWorkDateOUT(data?.out_date);
+    // setEmployeeTimeIn(formatTime(data.check_in_time));
+    if (data?.check_in_time) {
+      setEmployeeTimeIn(formatTime(data?.check_in_time));
+    } else if (data.time_entered) {
+      setEmployeeTimeIn(formatTime(data?.time_entered));
+    }
+    setEmployeeTimeOut(formatTime(data?.check_out_time));
     setAllbreakDelete(data);
     setShowModalViewBreak(true);
   };
@@ -618,13 +661,15 @@ const TimesheetListing = ({ data }) => {
         setBreakDetails([]);
       }
     } catch (error) {
+      handleCoockieExpire();
+      getUnAutherisedTokenMessage();
       console.error("API Error:", error);
     }
   };
 
   const [deleteBreakId, setDeleteBreakId] = useState(null);
   const [modalheadText, setModalheadText] = useState(null);
-  const [deleteBreakTime, setDeleteBreakTime]= useState(null);
+  const [deleteBreakTime, setDeleteBreakTime] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const deleteBreakTimesheet = (dataBreak) => {
@@ -645,9 +690,10 @@ const TimesheetListing = ({ data }) => {
     // } else {
     //   console.log("Deletion canceled by Break ");
     // }
-    setDeleteBreakTime(dataBreak)
-    setModalheadText("Break Timeing")
+    setDeleteBreakTime(dataBreak);
+    setModalheadText("Break Timeing");
     setDeleteModalOpen(true);
+    setDeleteBreakId("");
   };
 
   // fo all Break Delete
@@ -677,12 +723,16 @@ const TimesheetListing = ({ data }) => {
     //   console.log("Deletion canceled by timeclock");
     // }
     setDeleteBreakId(dataTimesheet);
-    setModalheadText("Timeclock")
+    setModalheadText("Timeclock");
     setDeleteModalOpen(true);
+    setDeleteBreakTime("")
   };
 
-  const confirmDeleteCategory = () => {
-    if(deleteBreakId){
+  const confirmDeleteCategory = async () => {
+    // console.log("deleteBreakId",deleteBreakId)
+    // console.log("deleteBreakTime",deleteBreakTime)
+    // return
+    if (deleteBreakId) {
       const datas = {
         inid: deleteBreakId.check_in_id,
         outid: deleteBreakId.check_out_id,
@@ -695,30 +745,51 @@ const TimesheetListing = ({ data }) => {
         ...userTypeData,
       };
       if (deleteBreakId) {
-          dispatch(deleteTimesheet(datas)).then(() => {
-            dispatch(fetchtimeSheetData(data));
-          });
+        // dispatch(deleteTimesheet(datas)).then(() => {
+        //   dispatch(fetchtimeSheetData(data));
+        // });
+        try {
+          await dispatch(deleteTimesheet(datas))
+            .unwrap()
+            .then(() => {
+              dispatch(fetchtimeSheetData(data));
+            });
+        } catch (error) {
+          console.log(error);
+          getUnAutherisedTokenMessage();
+          handleCoockieExpire();
+        }
       }
       ToastifyAlert("Deleted Successfully", "success");
       closeModalViewBreak();
-    }else if(deleteBreakTime){
+    } else if (deleteBreakTime) {
       const datasBreakDelete = {
         break_id: deleteBreakTime,
         ...userTypeData,
       };
       if (deleteBreakTime) {
-          dispatch(deleteBreak(datasBreakDelete)).then(() => {
-            dispatch(fetchtimeSheetData(data));
-          });
+        // dispatch(deleteBreak(datasBreakDelete)).then(() => {
+        //   dispatch(fetchtimeSheetData(data));
+        // });
+        try {
+          await dispatch(deleteBreak(datasBreakDelete))
+            .unwrap()
+            .then(() => {
+              dispatch(fetchtimeSheetData(data));
+            });
+        } catch (error) {
+          console.log(error);
+          getUnAutherisedTokenMessage();
+          handleCoockieExpire();
+        }
       }
       ToastifyAlert("Deleted Successfully", "success");
       closeModalViewBreak();
-
     }
 
     setModalheadText("");
-    setDeleteBreakId(null)
-    setDeleteBreakTime(null)
+    setDeleteBreakId(null);
+    setDeleteBreakTime(null);
     setDeleteModalOpen(false);
   };
 
@@ -740,11 +811,26 @@ const TimesheetListing = ({ data }) => {
     );
     return formattedDate;
   };
-  const formDateOUtDate = (dateString) =>{
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const [day, month, year] = dateString.split('-');
+  const formDateOUtDate = (dateString) => {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const [day, month, year] = dateString.split("-");
     const date = new Date(year, month - 1, day);
-    const formattedDate = `${months[date.getMonth()]} ${String(date.getDate()).padStart(2, '0')}, ${date.getFullYear()}`;
+    const formattedDate = `${months[date.getMonth()]} ${String(
+      date.getDate()
+    ).padStart(2, "0")}, ${date.getFullYear()}`;
     return formattedDate;
   };
 
@@ -987,7 +1073,10 @@ const TimesheetListing = ({ data }) => {
                       format={"MMMM DD, YYYY"}
                       views={["year", "month", "day"]}
                       slotProps={{
-                        textField: { placeholder: "Select Date",onKeyPress: preventKeyPress, },
+                        textField: {
+                          placeholder: "Select Date",
+                          onKeyPress: preventKeyPress,
+                        },
                       }}
                       disableFuture
                       components={{
@@ -1070,7 +1159,10 @@ const TimesheetListing = ({ data }) => {
                       format={"MMMM DD, YYYY"}
                       views={["year", "month", "day"]}
                       slotProps={{
-                        textField: { placeholder: "Select Date",onKeyPress: preventKeyPress, },
+                        textField: {
+                          placeholder: "Select Date",
+                          onKeyPress: preventKeyPress,
+                        },
                       }}
                       components={{
                         OpenPickerIcon: () => (
@@ -1135,8 +1227,8 @@ const TimesheetListing = ({ data }) => {
           </div>
 
           <div className="q-add-categories-section-middle-footer">
-            <button className="quic-btn quic-btn-save" onClick={handleSave}>
-              Add
+            <button className="quic-btn quic-btn-save attributeUpdateBTN" onClick={handleSave} disabled={loader}>
+              { loader ? <><CircularProgress color={"inherit"} className="loaderIcon" width={15} size={15}/> Add</> : "Add"}
             </button>
             <button onClick={closeModal} className="quic-btn quic-btn-cancle">
               Cancel
@@ -1167,8 +1259,7 @@ const TimesheetListing = ({ data }) => {
             </span>
             <div className="viewTextBark">
               <span className="borderRight ">
-                {modalDate} -{" "}
-                {modalDateOUT ? formatDate(modalDateOUT) : "-"}
+                {modalDate} - {modalDateOUT ? formatDate(modalDateOUT) : "-"}
               </span>{" "}
               <span className="pl-1"> Break-in/Break-out</span>
             </div>
@@ -1248,10 +1339,11 @@ const TimesheetListing = ({ data }) => {
 
           <div className="q-add-categories-section-middle-footer">
             <button
-              className="quic-btn quic-btn-save"
+              className="quic-btn quic-btn-save attributeUpdateBTN"
               onClick={handleBreakSave}
+              disabled={loader}
             >
-              Add
+              { loader ? <><CircularProgress color={"inherit"} className="loaderIcon" width={15} size={15}/> Add</> : "Add"}
             </button>
             <button
               onClick={closeModalBreak}
@@ -1376,12 +1468,14 @@ const TimesheetListing = ({ data }) => {
       </Modal>
       {/* Modal for All View Break IN/Out End */}
 
-        <DeleteModal
-            headerText={modalheadText ? modalheadText : ""}
-            open={deleteModalOpen}
-            onClose={() => {setDeleteModalOpen(false)}}
-            onConfirm={confirmDeleteCategory}
-        />
+      <DeleteModal
+        headerText={modalheadText ? modalheadText : ""}
+        open={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+        }}
+        onConfirm={confirmDeleteCategory}
+      />
     </>
   );
 };

@@ -19,9 +19,9 @@ export default function ForgetPasswordLogic(setLoading) {
     if (name === "email") {
       newErrors[name] =
         value === ""
-          ? `Please fill in the ${name} field`
+          ? `Email is required`
           : !emailRegex.test(value)
-            ? `Please provide a valid ${name}`
+            ? `Please enter a valid ${name}`
             : "";
     }
 
@@ -41,7 +41,7 @@ export default function ForgetPasswordLogic(setLoading) {
     let newErrors = { ...errors };
     let error = false;
     if (email == "") {
-      newErrors["email"] = "Please fill in the email field";
+      newErrors["email"] = "Email is required";
       error = true;
     } else {
       newErrors["email"] = "";

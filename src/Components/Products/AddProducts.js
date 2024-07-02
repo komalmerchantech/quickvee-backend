@@ -10,15 +10,20 @@ import {
   checkUpcCode,
   checkUpcCodeMultiple,
   checkUpcCodeSingle,
+  checkUpcOnVarientEdit,
   editProductData,
+  emptyProduct,
   fetchCategoryList,
   fetchProductList,
   fetchProductsData,
   fetchProductsDataById,
   fetchTaxList,
   fetchVarientList,
+  fetchVarietDataById,
   getInventorySetting,
+  getInventorySettingOnVarient,
   setVarientList,
+  updateEditVarient,
   updateFormValue,
 } from "../../Redux/features/Product/ProductSlice";
 import Validation from "../../Constants/Validation";
@@ -29,7 +34,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { Box } from "@mui/material";
 import * as yup from "yup";
 import AlertModal from "../../CommonComponents/AlertModal";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { BASE_URL } from "../../Constants/Config";
 import EditPage from "./EditPage";
 import Loader from "../../CommonComponents/Loader";
@@ -51,6 +56,7 @@ const AddProducts = () => {
   const navigate = useNavigate();
 
   const [fetchDataLoading, setFetchDataLoading] = useState(false);
+  const location = useLocation();
 
   // find add or edit url
   const pageUrl =
@@ -90,6 +96,7 @@ const AddProducts = () => {
   const [inventoryData, setInventoryData] = useState({});
   const [options, setOptions] = useState({});
   const [varientData, setVarientData] = useState([]);
+  const [varientLoading, setVarientLoading] = useState(false);
 
   const orderOptions = (values) => {
     return values
@@ -123,6 +130,7 @@ const AddProducts = () => {
   const [modalType, setModalType] = useState("");
   const [varientIndex, setVarientIndex] = useState(null);
   const [varientId, setVarientId] = useState("");
+  const [isVarientEdit, setIsVarientEdit] = useState(false);
 
   // close alert
   const handleCloseAlertModal = () => {
@@ -130,6 +138,7 @@ const AddProducts = () => {
   };
 
   const handleCloseEditModal = (modalType, varientId) => {
+    console.log('varientId', varientId);
     setOpenEditModal((prev) => !prev);
     setModalType(modalType);
     setVarientIndex(varientId);
@@ -147,16 +156,16 @@ const AddProducts = () => {
   // formValue Schema
 
   const formValueInnerSchema = yup.object().shape({
-    price: yup.string().required("price is required"),
-    qty: yup.string().required("quantity is required"),
-    upcCode: yup.string().required("upcCode is required"),
+    price: yup.string().required("Price is required"),
+    qty: yup.string().required("Quantity is required"),
+    upcCode: yup.string().required("UPC Code is required"),
   });
 
   const formInnerSchemaOnSingle = yup.array().of(
     yup.object({
-      price: yup.string().required("price is required"),
-      qty: yup.string().required("quantity is required"),
-      upcCode: yup.string().required("upcCode is required"),
+      price: yup.string().required("Price is required"),
+      qty: yup.string().required("Quantity is required"),
+      upcCode: yup.string().required("UPC Code is required"),
     })
   );
 
@@ -170,10 +179,14 @@ const AddProducts = () => {
     })
   );
 
+  const formSingleVarientChange = yup.object().shape({
+    formValue: !isMultipleVarient ? formInnerSchemaOnSingle : formValueSchema,
+  });
+
   // formschema for validation
   const formSchema = yup.object().shape({
-    title: yup.string().required("title is required"),
-    category: yup.array().min(1, "select category").required("select category"),
+    title: yup.string().required("Title is required"),
+    category: yup.array().min(1, "Select Category").required("Select Category"),
     formValue: !isMultipleVarient ? formInnerSchemaOnSingle : formValueSchema,
   });
 
@@ -314,7 +327,6 @@ const AddProducts = () => {
     }
   };
 
-
   const handleOnBlurAttributes = (e) => {
     if (e.key === "Enter" || e.key === "Tab") {
       handleVarientTitleBasedItemList();
@@ -408,7 +420,7 @@ const AddProducts = () => {
     const checkEmpty = varientLength?.map((item, i) => {
       if (!item?.varientAttributeList?.length || !item?.varientName) {
         setVarientError({
-          error: "Please enter the varients",
+          error: "Please enter the Varients",
           errorIndex: i,
         });
         return false;
@@ -577,6 +589,8 @@ const AddProducts = () => {
         ["frequentlyBroughtList"]: res?.payload?.result,
       }));
     });
+
+    return () => dispatch(emptyProduct([]));
   }, []);
 
   const handleFilterDropdownOption = (updatedDropdownList) => {
@@ -611,24 +625,37 @@ const AddProducts = () => {
   };
 
   const handleBlur = async (e, i, title) => {
-
     const checkUpcValueforSingle = async (value, name) => {
-      if (value && name === 'upcCode') {
+      if (value && name === "upcCode") {
         let isAllowed = false;
-        const data = {
-          merchant_id: LoginGetDashBoardRecordJson?.data?.merchant_id,
-          upc: value,
-          id: pageUrl === "inventory/products/edit" ? productId?.id : '',
-        };
-  
-        const response = isMultipleVarient
-          ? await dispatch(checkUpcCodeMultiple(data))
-          : await dispatch(checkUpcCodeSingle(data));
 
-        if (response?.payload === true) {
-          isAllowed = true;
+        if (!isVarientEdit) {
+          const data = {
+            merchant_id: LoginGetDashBoardRecordJson?.data?.merchant_id,
+            upc: value,
+            id: pageUrl === "inventory/products/edit" ? productId?.id : "",
+          };
+
+          const response = isMultipleVarient
+            ? await dispatch(checkUpcCodeMultiple(data))
+            : await dispatch(checkUpcCodeSingle(data));
+          if (response?.payload === true) {
+            isAllowed = true;
+          }
+        } else {
+          const data = {
+            merchant_id: LoginGetDashBoardRecordJson?.data?.merchant_id,
+            upc: value,
+            variant_id: formValue[0]?.productEditId,
+            ...userTypeData,
+          };
+
+          const response = await dispatch(checkUpcOnVarientEdit(data));
+
+          if (response?.payload?.status === "true") {
+            isAllowed = true;
+          }
         }
-  
         return isAllowed;
       }
       return true; // Allow empty value
@@ -640,14 +667,14 @@ const AddProducts = () => {
       });
     };
 
-
     const checkUpcValue = async (value, name) => {
       if (value && name === "upcCode") {
         let isAllowed = true;
         const data = {
           merchant_id: LoginGetDashBoardRecordJson?.data?.merchant_id,
           upc: value,
-          product_id: pageUrl === "inventory/products/edit" ? productId?.id : "",
+          product_id:
+            pageUrl === "inventory/products/edit" ? productId?.id : "",
         };
 
         const response = isMultipleVarient
@@ -656,8 +683,8 @@ const AddProducts = () => {
 
         if (response?.payload?.status === "true") {
           isAllowed = true;
-        }else if(response?.payload?.status === "false"){
-          isAllowed = false
+        } else if (response?.payload?.status === "false") {
+          isAllowed = false;
         }
         return isAllowed;
       }
@@ -675,379 +702,408 @@ const AddProducts = () => {
       }
     };
 
+    const { name, value, type, checked } = e.target;
 
-      const { name, value, type, checked } = e.target;
+    /// convert input value format 0.00
+    let fieldValue;
+    if (!notAllowDecimalValue.includes(name)) {
+      fieldValue = value
+        // Remove extra dots and ensure only one dot exists at most
+        .replace(/[^\d.]/g, "") // Allow digits and dots only
+        .replace(/^(\d*\.)(.*)\./, "$1$2") // Remove extra dots
+        .replace(/^(\d*\.\d*)(.*)\./, "$1$2"); // Remove extra dots after the decimal point
 
-      /// convert input value format 0.00
-      let fieldValue;
-      if (!notAllowDecimalValue.includes(name)) {
-        fieldValue = value
-          // Remove extra dots and ensure only one dot exists at most
-          .replace(/[^\d.]/g, "") // Allow digits and dots only
-          .replace(/^(\d*\.)(.*)\./, "$1$2") // Remove extra dots
-          .replace(/^(\d*\.\d*)(.*)\./, "$1$2"); // Remove extra dots after the decimal point
+      let inputStr = fieldValue.replace(/\D/g, "");
+      inputStr = inputStr.replace(/^0+/, "");
 
-        let inputStr = fieldValue.replace(/\D/g, "");
-        inputStr = inputStr.replace(/^0+/, "");
-
-        if (inputStr.length == "") {
-          fieldValue = "";
-        } else if (inputStr.length === 1) {
-          fieldValue = "0.0" + inputStr;
-        } else if (inputStr.length === 2) {
-          fieldValue = "0." + inputStr;
-        } else {
-          fieldValue =
-            inputStr.slice(0, inputStr.length - 2) + "." + inputStr.slice(-2);
-        }
+      if (inputStr.length == "") {
+        fieldValue = "";
+      } else if (inputStr.length === 1) {
+        fieldValue = "0.0" + inputStr;
+      } else if (inputStr.length === 2) {
+        fieldValue = "0." + inputStr;
+      } else {
+        fieldValue =
+          inputStr.slice(0, inputStr.length - 2) + "." + inputStr.slice(-2);
       }
-      // allowed alphanumeric value in upcCode field but not allowed decimal value
-      else if (name === "upcCode") {
-        fieldValue = fieldValue = value
-          // Remove extra dots and ensure only one dot exists at most
-          .replace(/[^\w.]/g, "") // Allow alphanumeric characters, digits, and dots only
-          .replace(/^(\d*\.)(.*)\./, "$1$2") // Remove extra dots
-          .replace(/^(\d*\.\d*)(.*)\./, "$1$2"); // Remove extra dots after the decimal point
+    }
+    // allowed alphanumeric value in upcCode field but not allowed decimal value
+    else if (name === "upcCode") {
+      fieldValue = fieldValue = value
+        // Remove extra dots and ensure only one dot exists at most
+        .replace(/[^\w.]/g, "") // Allow alphanumeric characters, digits, and dots only
+        .replace(/^(\d*\.)(.*)\./, "$1$2") // Remove extra dots
+        .replace(/^(\d*\.\d*)(.*)\./, "$1$2"); // Remove extra dots after the decimal point
 
-        let inputStr = fieldValue.replace(/[^\w]/g, "");
-        if (inputStr == "0") {
-          fieldValue = "0";
-        } else {
-          fieldValue = inputStr.toUpperCase();
-        }
+      let inputStr = fieldValue.replace(/[^\w]/g, "");
+      if (inputStr == "0") {
+        fieldValue = "0";
+      } else {
+        fieldValue = inputStr.toUpperCase();
+      }
 
-        // here check UPCCode Value
+      // here check UPCCode Value
 
-        // Skip API validation if the field is empty
-        if(isMultipleVarient){
-          // multiple varient
-          if (!fieldValue) {
-            const updatedValues = formValue.map((item, index) => {
-              if (index === i) {
-                const currentTitle = Object.keys(item)[0];
-                return {
-                  ...item,
-                  [currentTitle]: {
-                    ...item[currentTitle],
-                    [name]: fieldValue,
-                    upcCode: "",
-                    upcError: "",
-                  },
-                };
-              }
-              return item;
-            });
-  
-            setFormValue(updatedValues);
-            return;
-          } else {
-            const isUpcValid = await checkUpcValue(fieldValue, name);
-            const isLocalDuplicate = checkLocalDuplicate(fieldValue, i);
-            const updatedValues = formValue.map((item, index) => {
-              if (index === i) {
-                const currentTitle = Object.keys(item)[0];
-                return {
-                  ...item,
-                  [currentTitle]: {
-                    ...item[currentTitle],
-                    [name]: fieldValue,
-                    upcCode: (isUpcValid) && !isLocalDuplicate ? fieldValue : "",
-                    upcError: !isUpcValid
-                      ? "UPC code must be unique (API check). test"
-                      : isLocalDuplicate
-                        ? "UPC code must be unique (local check)."
-                        : "",
-                  },
-                };
-              }
-              return item;
-            });
-  
-            setFormValue(updatedValues);
-            return;
-          }
-        }else{
-          if (!fieldValue) {
-            const updatedValues = formValue.map((item, index) => {
-              if (index === i) {
-                return {
-                  ...item,
+      // Skip API validation if the field is empty
+      if (isMultipleVarient) {
+        // multiple varient
+        if (!fieldValue) {
+          const updatedValues = formValue.map((item, index) => {
+            if (index === i) {
+              const currentTitle = Object.keys(item)[0];
+              return {
+                ...item,
+                [currentTitle]: {
+                  ...item[currentTitle],
                   [name]: fieldValue,
                   upcCode: "",
-                  upcError: ""
-                };
-              }
-              return item;
-            });
-      
-            setFormValue(updatedValues);
-            return;
-          }else{
-            const isUpcValid = await checkUpcValueforSingle(fieldValue, name);
-            const isLocalDuplicate = checkLocalDuplicateForSingle(fieldValue, i);
-        
-            const updatedValues = formValue.map((item, index) => {
-              if (index === i) {
-                return {
-                  ...item,
+                  upcError: "",
+                },
+              };
+            }
+            return item;
+          });
+
+          setFormValue(updatedValues);
+          return;
+        } else {
+          const isUpcValid = await checkUpcValue(fieldValue, name);
+          const isLocalDuplicate = checkLocalDuplicate(fieldValue, i);
+          const updatedValues = formValue.map((item, index) => {
+            if (index === i) {
+              const currentTitle = Object.keys(item)[0];
+              return {
+                ...item,
+                [currentTitle]: {
+                  ...item[currentTitle],
                   [name]: fieldValue,
                   upcCode: isUpcValid && !isLocalDuplicate ? fieldValue : "",
-                  upcError: !isUpcValid ? "UPC code must be unique (API check)." : isLocalDuplicate ? "UPC code must be unique (local check)." : ""
-                };
-              }
-              return item;
-            });
+                  upcError: !isUpcValid
+                    ? "UPC Code must be unique"
+                    : isLocalDuplicate
+                      ? "UPC Code must be unique"
+                      : "",
+                },
+              };
+            }
+            return item;
+          });
+
+          setFormValue(updatedValues);
+          return;
+        }
+      } else {
+        if (!fieldValue) {
+          const updatedValues = formValue.map((item, index) => {
+            if (index === i) {
+              return {
+                ...item,
+                [name]: fieldValue,
+                upcCode: "",
+                upcError: "",
+              };
+            }
+            return item;
+          });
+
+          setFormValue(updatedValues);
+          return;
+        } else {
+          const isUpcValid = await checkUpcValueforSingle(fieldValue, name);
+          const isLocalDuplicate = checkLocalDuplicateForSingle(fieldValue, i);
+
+          const updatedValues = formValue.map((item, index) => {
+            if (index === i) {
+              return {
+                ...item,
+                [name]: fieldValue,
+                upcCode: isUpcValid && !isLocalDuplicate ? fieldValue : "",
+                upcError: !isUpcValid
+                  ? "UPC code must be unique (API check)."
+                  : isLocalDuplicate
+                    ? "UPC code must be unique (local check)."
+                    : "",
+              };
+            }
+            return item;
+          });
+
+          setFormValue(updatedValues);
+          return;
+        }
+      }
+    }
+    // normal input value format
+    else {
+      fieldValue = value
+        // Remove extra dots and ensure only one dot exists at most
+        .replace(/[^\d.]/g, "") // Allow digits and dots only
+        .replace(/^(\d*\.)(.*)\./, "$1$2") // Remove extra dots
+        .replace(/^(\d*\.\d*)(.*)\./, "$1$2"); // Remove extra dots after the decimal point
+
+      let inputStr = fieldValue.replace(/\D/g, "");
+      // inputStr = inputStr.replace(/^+/, "");
+      if (inputStr == "0") {
+        fieldValue = "0";
+      } else {
+        fieldValue = inputStr;
+      }
+    }
+
+    // margin and profit calculation
+    let totalPriceValue;
+    let marginValue;
+    let profitValue;
+    let price_total_value;
+
+    // if price value is change manually the recalculate margin and profit value
+    const costPerValue = isMultipleVarient
+      ? formValue?.[i]?.[title]?.["costPerItem"]
+      : formValue?.[0]?.["costPerItem"];
+    if (name === "price") {
+      if (+costPerValue > 0 && value > 0) {
+        let marginvl = (costPerValue * 100) / fieldValue;
+        let showmargin = 100 - marginvl;
+        marginValue = parseFloat(showmargin).toFixed(2);
+        profitValue = parseFloat(fieldValue - costPerValue).toFixed(2);
+      } else if (!costPerValue && value > 0) {
+        marginValue = "";
+        profitValue = "";
+      }
+    }
+
+    const isValue = (input) => {
+      const number = parseFloat(input);
+      return !isNaN(number);
+    };
+
+    const oldMargin = (data) => {
+      return (name === "price" || name === "costPerItem") && !fieldValue
+        ? ""
+        : data.every((item) => isValue(item));
+    };
+
+    const calculateProfit = (name, item, value) => {
+      let profitAmount = 0;
+      if (name === "costPerItem" && parseFloat(item?.price) > 0) {
+        profitAmount = parseFloat(item?.price - value).toFixed(2);
+      } else if (name === "price" && parseFloat(item?.costPerItem) > 0) {
+        profitAmount = parseFloat(value - item?.costPerItem).toFixed(2);
+      } else {
+        profitAmount = "";
+      }
+      return profitAmount;
+    };
+
+    const calculatemargin = (name, item, value) => {
+      let marginAmount = 0;
+      if (name === "costPerItem" && parseFloat(item?.price) > 0) {
+        let marginvl = (value * 100) / parseFloat(item?.price);
+        let showmargin = 100 - marginvl;
+        marginAmount = parseFloat(showmargin).toFixed(2);
+      } else if (name === "price" && parseFloat(item?.costPerItem) > 0) {
+        let marginvl =
+          (parseFloat(item?.costPerItem) * 100) / parseFloat(value);
+        let showmargin = 100 - marginvl;
+        marginAmount = parseFloat(showmargin).toFixed(2);
+      } else {
+        marginAmount = "";
+      }
+      return marginAmount;
+    };
+
+    if (isMultipleVarient) {
+      const updatedValues = formValue.map((item, index) => {
+        const currentTitle = Object.keys(item)[0];
+
+
+
+     
+        let compareAtPriceValue = parseFloat(
+          name === "compareAtPrice" ? fieldValue : item[currentTitle]?.compareAtPrice
+        );
         
-            setFormValue(updatedValues);
-            return;
+        let priceValue = parseFloat(
+          name === "price"
+            ? fieldValue
+            : name === "costPerItem"
+            ? price_total_value
+            :  item[currentTitle]?.price
+        );
+        
+        let showError = false;
+        
+        if (name === "price") {
+          if (compareAtPriceValue === 0) {
+            showError = false;
+          } else if (compareAtPriceValue > 0) {
+            showError = priceValue >= compareAtPriceValue;
           }
+        } else if (name === "compareAtPrice") {
+          showError = priceValue >= compareAtPriceValue;
         }
-      }
-      // normal input value format
-      else {
-        fieldValue = value
-          // Remove extra dots and ensure only one dot exists at most
-          .replace(/[^\d.]/g, "") // Allow digits and dots only
-          .replace(/^(\d*\.)(.*)\./, "$1$2") // Remove extra dots
-          .replace(/^(\d*\.\d*)(.*)\./, "$1$2"); // Remove extra dots after the decimal point
 
-        let inputStr = fieldValue.replace(/\D/g, "");
-        // inputStr = inputStr.replace(/^+/, "");
-        if (inputStr == "0") {
-          fieldValue = "0";
-        } else {
-          fieldValue = inputStr;
-        }
-      }
 
-      // margin and profit calculation
-      let totalPriceValue;
-      let marginValue;
-      let profitValue;
-      let price_total_value;
 
-      // if price value is change manually the recalculate margin and profit value
-      const costPerValue = isMultipleVarient
-        ? formValue?.[i]?.[title]?.["costPerItem"]
-        : formValue?.[0]?.["costPerItem"];
-      if (name === "price") {
-        if (+costPerValue > 0 && value > 0) {
-          let marginvl = (costPerValue * 100) / fieldValue;
-          let showmargin = 100 - marginvl;
-          marginValue = parseFloat(showmargin).toFixed(2);
-          profitValue = parseFloat(fieldValue - costPerValue).toFixed(2);
-        } else if (!costPerValue && value > 0) {
-          marginValue = "";
-          profitValue = "";
-        }
-      }
 
-      const isValue = (input) => Boolean(parseFloat(input));
 
-      const oldMargin = (data) => {
-        return (name === "price" || name === "costPerItem") && !fieldValue
-          ? ""
-          : data.every((item) => isValue(item));
-      };
 
-      const calculateProfit = (name, item, value) => {
-        let profitAmount = 0;
-        if (name === "costPerItem" && parseFloat(item?.price) > 0) {
-          profitAmount = parseFloat(item?.price - value).toFixed(2);
-        } else if (name === "price" && parseFloat(item?.costPerItem) > 0) {
-          profitAmount = parseFloat(value - item?.costPerItem).toFixed(2);
-        } else {
-          profitAmount = "";
-        }
-        return profitAmount;
-      };
 
-      const calculatemargin = (name, item, value) => {
-        let marginAmount = 0;
-        if (name === "costPerItem" && parseFloat(item?.price) > 0) {
-          let marginvl = (value * 100) / parseFloat(item?.price);
-          let showmargin = 100 - marginvl;
-          marginAmount = parseFloat(showmargin).toFixed(2);
-        } else if (name === "price" && parseFloat(item?.costPerItem) > 0) {
-          let marginvl =
-            (parseFloat(item?.costPerItem) * 100) / parseFloat(value);
-          let showmargin = 100 - marginvl;
-          marginAmount = parseFloat(showmargin).toFixed(2);
-        } else {
-          marginAmount = "";
-        }
-        return marginAmount;
-      };
 
-      if(isMultipleVarient){
-        const updatedValues = formValue.map((item, index) => {
-          const currentTitle = Object.keys(item)[0];
-          const showError =
-            parseFloat(
-              name === "price"
-                ? fieldValue
-                : name === "costPerItem"
-                  ? price_total_value
-                  : item[currentTitle]?.price
-            ) >=
-            parseFloat(
-              name === "compareAtPrice"
-                ? fieldValue
-                : item[currentTitle]?.compareAtPrice
-            );
-  
-          const costPerItemAndPriceAmountExists = () => {
-            const bool =
-              (name === "costPerItem" &&
-                fieldValue &&
-                parseFloat(item[currentTitle]?.price) > 0) ||
-              (name === "price" &&
-                fieldValue &&
-                parseFloat(item[currentTitle]?.costPerItem) > 0);
-            return bool;
-          };
-  
-          if (i > 0) {
-            return !["upcCode", "customCode"].includes(name) && item[title]
-              ? {
-                  ...item,
-                  [currentTitle]: {
-                    ...item[currentTitle],
-                    [name]: fieldValue,
-                    price:
-                      name === "price"
-                        ? fieldValue
-                        : item[currentTitle]?.price
-                          ? item[currentTitle]?.price
-                          : "",
-                    margin: costPerItemAndPriceAmountExists()
-                      ? calculatemargin(name, item[currentTitle], fieldValue)
-                      : oldMargin([
-                            item[currentTitle]?.costPerItem,
-                            item[currentTitle]?.margin,
-                            item[currentTitle]?.price,
-                          ])
-                        ? item[currentTitle]?.margin
+
+
+
+        const costPerItemAndPriceAmountExists = () => {
+          const bool =
+            (name === "costPerItem" &&
+              fieldValue &&
+              parseFloat(item[currentTitle]?.price) > 0) ||
+            (name === "price" &&
+              fieldValue &&
+              parseFloat(item[currentTitle]?.costPerItem) > 0);
+          return bool;
+        };
+
+        if (i > 0) {
+          return !["upcCode", "customCode"].includes(name) && item[title]
+            ? {
+                ...item,
+                [currentTitle]: {
+                  ...item[currentTitle],
+                  [name]: fieldValue,
+                  price:
+                    name === "price"
+                      ? fieldValue
+                      : item[currentTitle]?.price
+                        ? item[currentTitle]?.price
                         : "",
-                    profit: costPerItemAndPriceAmountExists()
-                      ? calculateProfit(name, item[currentTitle], fieldValue)
-                      : oldMargin([
-                            item[currentTitle]?.costPerItem,
-                            item[currentTitle]?.margin,
-                            item[currentTitle]?.price,
-                          ])
-                        ? item[currentTitle]?.profit
+                  margin: costPerItemAndPriceAmountExists()
+                    ? calculatemargin(name, item[currentTitle], fieldValue)
+                    : oldMargin([
+                          item[currentTitle]?.costPerItem,
+                          item[currentTitle]?.margin,
+                          item[currentTitle]?.price,
+                        ])
+                      ? item[currentTitle]?.margin
+                      : "",
+                  profit: costPerItemAndPriceAmountExists()
+                    ? calculateProfit(name, item[currentTitle], fieldValue)
+                    : oldMargin([
+                          item[currentTitle]?.costPerItem,
+                          item[currentTitle]?.margin,
+                          item[currentTitle]?.price,
+                        ])
+                      ? item[currentTitle]?.profit
+                      : "",
+                  comparePriceError:
+                    ["price", "compareAtPrice", "costPerItem"]?.includes(
+                      name
+                    ) && showError
+                      ? "Compare Price must be greater than price."
+                      : [
+                            "qty",
+                            "upcCode",
+                            "customCode",
+                            "reorderLevel",
+                            "reorderQty",
+                            "checkId",
+                            "disable",
+                            "isFoodStamble",
+                            "sellOutOfStock",
+                            "trackQuantity",
+                            "costPerItem",
+                          ]?.includes(name) &&
+                          item[currentTitle]?.comparePriceError
+                        ? item[currentTitle]?.comparePriceError
                         : "",
-                    comparePriceError:
-                      ["price", "compareAtPrice", "costPerItem"]?.includes(
-                        name
-                      ) && showError
-                        ? "Compare Price must be greater than price."
-                        : [
-                              "qty",
-                              "upcCode",
-                              "customCode",
-                              "reorderLevel",
-                              "reorderQty",
-                              "checkId",
-                              "disable",
-                              "isFoodStamble",
-                              "sellOutOfStock",
-                              "trackQuantity",
-                              "costPerItem",
-                            ]?.includes(name) &&
-                            item[currentTitle]?.comparePriceError
-                          ? item[currentTitle]?.comparePriceError
-                          : "",
-                  },
-                }
-              : item;
-          } else if (i === 0) {
-            return !["upcCode", "customCode"].includes(name) &&
-              !item[currentTitle][name] &&
-              pageUrl === "inventory/products/add"
-              ? {
-                  ...item,
-                  [currentTitle]: {
-                    ...item[currentTitle],
-                    [name]: fieldValue,
-                    price:
-                      name === "price"
-                        ? fieldValue
-                        : item[currentTitle]?.price
-                          ? item[currentTitle]?.price
-                          : "",
-                    margin: costPerItemAndPriceAmountExists()
-                      ? calculatemargin(name, item[currentTitle], fieldValue)
-                      : oldMargin([
-                            item[currentTitle]?.costPerItem,
-                            item[currentTitle]?.margin,
-                            item[currentTitle]?.price,
-                          ])
-                        ? item[currentTitle]?.margin
+                },
+              }
+            : item;
+        } else if (i === 0) {
+          return !["upcCode", "customCode"].includes(name) &&
+            !item[currentTitle][name] &&
+            pageUrl === "inventory/products/add"
+            ? {
+                ...item,
+                [currentTitle]: {
+                  ...item[currentTitle],
+                  [name]: fieldValue,
+                  price:
+                    name === "price"
+                      ? fieldValue
+                      : item[currentTitle]?.price
+                        ? item[currentTitle]?.price
                         : "",
-                    profit: costPerItemAndPriceAmountExists()
-                      ? calculateProfit(name, item[currentTitle], fieldValue)
-                      : oldMargin([
-                            item[currentTitle]?.costPerItem,
-                            item[currentTitle]?.margin,
-                            item[currentTitle]?.price,
-                          ])
-                        ? item[currentTitle]?.profit
+                  margin: costPerItemAndPriceAmountExists()
+                    ? calculatemargin(name, item[currentTitle], fieldValue)
+                    : oldMargin([
+                          item[currentTitle]?.costPerItem,
+                          item[currentTitle]?.margin,
+                          item[currentTitle]?.price,
+                        ])
+                      ? item[currentTitle]?.margin
+                      : "",
+                  profit: costPerItemAndPriceAmountExists()
+                    ? calculateProfit(name, item[currentTitle], fieldValue)
+                    : oldMargin([
+                          item[currentTitle]?.costPerItem,
+                          item[currentTitle]?.margin,
+                          item[currentTitle]?.price,
+                        ])
+                      ? item[currentTitle]?.profit
+                      : "",
+
+                  comparePriceError:
+                    ["price", "compareAtPrice", "costPerItem"]?.includes(
+                      name
+                    ) && showError
+                      ? "Compare Price must be greater than price."
+                      : [
+                            "qty",
+                            "upcCode",
+                            "customCode",
+                            "reorderLevel",
+                            "reorderQty",
+                            "checkId",
+                            "disable",
+                            "isFoodStamble",
+                            "sellOutOfStock",
+                            "trackQuantity",
+                            "costPerItem",
+                          ]?.includes(name) &&
+                          item[currentTitle]?.comparePriceError
+                        ? item[currentTitle]?.comparePriceError
                         : "",
-  
-                    comparePriceError:
-                      ["price", "compareAtPrice", "costPerItem"]?.includes(
-                        name
-                      ) && showError
-                        ? "Compare Price must be greater than price."
-                        : [
-                              "qty",
-                              "upcCode",
-                              "customCode",
-                              "reorderLevel",
-                              "reorderQty",
-                              "checkId",
-                              "disable",
-                              "isFoodStamble",
-                              "sellOutOfStock",
-                              "trackQuantity",
-                              "costPerItem",
-                            ]?.includes(name) &&
-                            item[currentTitle]?.comparePriceError
-                          ? item[currentTitle]?.comparePriceError
-                          : "",
-                  },
-                }
-              : item;
-          }
-          //   else {
-          //   return !["upcCode", "customCode"].includes(name) ? {
-          //     ...item,
-          //     [title]: {
-          //       ...title[title],
-          //       [name]: fieldValue,
-          //       price: !isNaN(parseFloat(price_total_value))
-          //         ? parseFloat(price_total_value).toFixed(2)
-          //         : name === "price"
-          //           ? fieldValue
-          //           : item[currentTitle]?.price && (name === "costPerItem" && !fieldValue)
-          //             ? ""
-          //             : item[currentTitle]?.price,
-          //         margin: !isNaN(parseFloat(marginValue)) ? marginValue : oldMargin([item[currentTitle]?.costPerItem, item[currentTitle]?.margin, item[currentTitle]?.price]) ? item[currentTitle]?.margin : "",
-          //         profit: !isNaN(parseFloat(profitValue)) ? profitValue : oldMargin([item[currentTitle]?.costPerItem, item[currentTitle]?.margin, item[currentTitle]?.price]) ? item[currentTitle]?.profit : "",
-          //         comparePriceError:
-          //         ((["price", "compareAtPrice", "costPerItem"]?.includes(name)) && showError)
-          //             ? "Compare Price must be greater than price."
-          //             : (["qty", "upcCode", "customCode", "reorderLevel", "reorderQty"]?.includes(name)) && item[currentTitle]?.comparePriceError ? item[currentTitle]?.comparePriceError : ""
-          //     }
-          //   }: item
-          // }
-        });
-  
-        setFormValue(updatedValues);
-      }
-    
+                },
+              }
+            : item;
+        }
+        //   else {
+        //   return !["upcCode", "customCode"].includes(name) ? {
+        //     ...item,
+        //     [title]: {
+        //       ...title[title],
+        //       [name]: fieldValue,
+        //       price: !isNaN(parseFloat(price_total_value))
+        //         ? parseFloat(price_total_value).toFixed(2)
+        //         : name === "price"
+        //           ? fieldValue
+        //           : item[currentTitle]?.price && (name === "costPerItem" && !fieldValue)
+        //             ? ""
+        //             : item[currentTitle]?.price,
+        //         margin: !isNaN(parseFloat(marginValue)) ? marginValue : oldMargin([item[currentTitle]?.costPerItem, item[currentTitle]?.margin, item[currentTitle]?.price]) ? item[currentTitle]?.margin : "",
+        //         profit: !isNaN(parseFloat(profitValue)) ? profitValue : oldMargin([item[currentTitle]?.costPerItem, item[currentTitle]?.margin, item[currentTitle]?.price]) ? item[currentTitle]?.profit : "",
+        //         comparePriceError:
+        //         ((["price", "compareAtPrice", "costPerItem"]?.includes(name)) && showError)
+        //             ? "Compare Price must be greater than price."
+        //             : (["qty", "upcCode", "customCode", "reorderLevel", "reorderQty"]?.includes(name)) && item[currentTitle]?.comparePriceError ? item[currentTitle]?.comparePriceError : ""
+        //     }
+        //   }: item
+        // }
+      });
+
+      setFormValue(updatedValues);
+    }
   };
 
   const handleOnChange = (e, i, title) => {
@@ -1132,7 +1188,10 @@ const AddProducts = () => {
       }
     }
 
-    const isValue = (input) => Boolean(parseFloat(input));
+    const isValue = (input) => {
+      const number = parseFloat(input);
+      return !isNaN(number);
+    };
 
     const oldMargin = (data) => {
       return (name === "price" || name === "costPerItem") && !fieldValue
@@ -1174,17 +1233,38 @@ const AddProducts = () => {
     // manually onchange
     if (isMultipleVarient) {
       updatedValues = formValue.map((item, index) => {
-        showError =
-          parseFloat(
+
+          let compareAtPriceValue = parseFloat(
+            name === "compareAtPrice" ? fieldValue : item[title]?.compareAtPrice
+          );
+          
+          let priceValue = parseFloat(
             name === "price"
               ? fieldValue
               : name === "costPerItem"
-                ? price_total_value
-                : item[title]?.price
-          ) >=
-          parseFloat(
-            name === "compareAtPrice" ? fieldValue : item[title]?.compareAtPrice
+              ? price_total_value
+              : item[title]?.price
           );
+          
+          let showError = false;
+          
+          if (name === "price") {
+            if (compareAtPriceValue === 0) {
+              showError = false;
+            } else if (compareAtPriceValue > 0) {
+              showError = priceValue >= compareAtPriceValue;
+            }
+          } else if (name === "compareAtPrice") {
+            showError = priceValue >= compareAtPriceValue;
+          }
+                    
+                   
+        
+
+
+
+
+
 
         const costPerItemAndPriceAmountExists = () => {
           const bool =
@@ -1258,17 +1338,35 @@ const AddProducts = () => {
       });
     } else {
       updatedValues = formValue.map((item, index) => {
-        showError =
-          parseFloat(
-            name === "price"
-              ? fieldValue
-              : name === "costPerItem"
-                ? price_total_value
-                : item?.price
-          ) >=
-          parseFloat(
-            name === "compareAtPrice" ? fieldValue : item?.compareAtPrice
-          );
+        console.log(fieldValue, item?.price)
+
+
+
+        let compareAtPriceValue = parseFloat(
+          name === "compareAtPrice" ? fieldValue : item?.compareAtPrice
+        );
+        
+        let priceValue = parseFloat(
+          name === "price"
+            ? fieldValue
+            : name === "costPerItem"
+            ? price_total_value
+            : item?.price
+        );
+        
+        let showError = false;
+        
+        if (name === "price") {
+          if (compareAtPriceValue === 0) {
+            showError = false;
+          } else if (compareAtPriceValue > 0) {
+            showError = priceValue >= compareAtPriceValue;
+          }
+        } else if (name === "compareAtPrice") {
+          showError = priceValue >= compareAtPriceValue;
+        }
+
+
 
         const costPerItemAndPriceAmountExistsInSingleVarient = () => {
           const bool =
@@ -1320,6 +1418,8 @@ const AddProducts = () => {
 
     setFormValue(updatedValues);
   };
+
+  console.log("formvalue", formValue);
 
   const handleVarientTitleBasedItemList = () => {
     if (varientLength.length) {
@@ -1509,12 +1609,86 @@ const AddProducts = () => {
     }
   };
 
+  const fetchSingleVarientData = () => {
+    const data = location?.state;
+    const formData = new FormData();
+
+    formData.append("id", data?.var_id);
+    formData.append("single_product", 0);
+    formData.append("product_name", data?.title);
+    formData.append("login_type", userTypeData?.login_type);
+    formData.append("token_id", userTypeData?.token_id);
+    formData.append("token", userTypeData?.token);
+
+
+    const formDataNew = new FormData();
+    formDataNew.append(
+      "merchant_id",
+      LoginGetDashBoardRecordJson?.data?.merchant_id
+    );
+    formDataNew.append("login_type", userTypeData?.login_type);
+    formDataNew.append("token_id", userTypeData?.token_id);
+    formDataNew.append("token", userTypeData?.token);
+
+    dispatch(getInventorySettingOnVarient(formDataNew)).then((res) => {
+      if (res?.payload?.status) {
+        setInventoryData(res?.payload?.result);
+      }
+    });
+
+    dispatch(fetchVarietDataById(formData))
+      .then((res) => {
+        console.log("res", res);
+        if (res?.payload?.status) {
+          const payloadData = res?.payload?.var_data;
+          setProductData(payloadData);
+          setIsMultipleVaient(false);
+          setIsVarientEdit(true);
+          setFormValue([
+            {
+              notEditable: true,
+              costPerItem: payloadData?.costperItem || "",
+              compareAtPrice: payloadData?.compare_price || "",
+              price: payloadData?.price || "",
+              margin: payloadData?.margin || "",
+              // notEditable: payloadData?.notEditable || "",
+              productEditId: payloadData?.id || "",
+              // productEditVarientId: payloadData?.id || "",
+              comparePriceError: payloadData?.comparePriceError || "",
+              upcError: payloadData?.upcError || "",
+              profit: payloadData?.profit || "",
+              qty: payloadData?.quantity || "",
+              upcCode: payloadData?.upc || "",
+              customCode: payloadData?.custom_code || "",
+              reorderQty: payloadData?.reorder_qty || "",
+              reorderLevel: payloadData?.reorder_level || "",
+              trackQuantity: Boolean(+payloadData?.trackqnty) || false,
+              sellOutOfStock: Boolean(+payloadData?.isstockcontinue) || false,
+              checkId: Boolean(+payloadData?.is_tobacco) || false,
+              disable: Boolean(+payloadData?.disable) || false,
+              // itemForAllLinkedLocation: payloadData?.,
+              isFoodStamble: Boolean(+payloadData?.food_stampable) || false,
+            },
+          ]);
+        }
+      })
+      .catch((err) => {
+        ToastifyAlert("Error while fetch product data!", "error");
+        getUnAutherisedTokenMessage();
+      })
+      .finally(() => {
+        setFetchDataLoading(false);
+      });
+  };
+
   useEffect(() => {
     // called fetchproduct data api based on id
     if (pageUrl === "inventory/products/edit") {
       fetchProductDataById();
+    } else if (pageUrl === "inventory/products/varient-edit") {
+      fetchSingleVarientData();
     }
-  }, [pageUrl]);
+  }, [pageUrl, location]);
 
   const selectedItemsFromdata = (items, filterListName) => {
     const arr = items?.map((i) => {
@@ -1958,6 +2132,9 @@ const AddProducts = () => {
 
     if (pageUrl === "inventory/products/edit") {
       data["productid"] = productData?.id ? productData?.id : "";
+      data["var_id"] = isMultipleVarient
+        ? varientCategory("productEditId", "", "").join(",").trim()
+        : "";
       data["optionid"] = options?.id ? options?.id : "";
     }
 
@@ -1966,7 +2143,7 @@ const AddProducts = () => {
       checkEmpty = varientLength?.map((item, i) => {
         if (!item?.varientAttributeList?.length || !item?.varientName) {
           setVarientError({
-            error: "Please enter the varients",
+            error: "Please enter the Varients",
             errorIndex: i,
           });
           return false;
@@ -2010,6 +2187,11 @@ const AddProducts = () => {
               .then((res) => {
                 if (res?.payload?.data?.status) {
                   ToastifyAlert("Updated Successfully", "success");
+                  let timerId;
+                  clearTimeout(timerId);
+                  timerId = setTimeout(() => {
+                    window.location.reload();
+                  }, 400);
                 }
               })
               .catch((err) => {
@@ -2046,6 +2228,81 @@ const AddProducts = () => {
     }
   };
 
+  const handleUpdateVarient = async () => {
+    const data = {
+      merchant_id: LoginGetDashBoardRecordJson?.data?.merchant_id,
+      // token_id: userTypeData?.token_id,
+      // login_type: userTypeData?.login_type,
+      // token: userTypeData?.token,
+      variant_id: formValue[0]?.productEditId,
+      price: formValue[0]?.price,
+      compare_price: formValue[0]?.compareAtPrice,
+      costperItem: formValue[0]?.costPerItem,
+      ogvarmargin: formValue[0]?.margin,
+      ogvarprofit: formValue[0]?.profit,
+      //sku:
+      //barcode:
+      // trackqnty: +formValue[0]?.trackQuantity,
+      // isstockcontinue: +formValue[0]?.sellOutOfStock,
+      // disable: +formValue[0]?.disable,
+      // is_tobacco: +formValue[0]?.checkId,
+      // food_stampable: +formValue[0]?.isFoodStamble,
+      quantity: formValue[0]?.qty,
+      reorder_level: formValue[0]?.reorderLevel,
+      upc: formValue[0]?.upcCode,
+      custom_code: formValue[0]?.customCode,
+      reorder_qty: formValue[0]?.reorderQty,
+      // reorder_cost: formValue[0]?.reordr,
+      Track_Quantity: +formValue[0]?.trackQuantity,
+      Continue_selling: +formValue[0]?.sellOutOfStock,
+      Checkid: +formValue[0]?.checkId,
+      Disable: +formValue[0]?.disable,
+      Food_stampable: +formValue[0]?.isFoodStamble,
+      ...userTypeData,
+    };
+
+    try {
+      const response = await formSingleVarientChange.validate(
+        { formValue },
+        {
+          abortEarly: false,
+        }
+      );
+      setError({});
+      // check any error exist in error state and if response success and any productTitleError is exist
+      if (!!response && checkFormErrorExist()) {
+        setVarientLoading(true);
+        dispatch(updateEditVarient(data))
+          .then((res) => {
+            if (res?.payload?.status) {
+              ToastifyAlert("update Successfully", "success");
+              fetchSingleVarientData();
+            }
+          })
+          .catch((err) => {
+            if (err) {
+              ToastifyAlert("Error!", "error");
+            }
+            getUnAutherisedTokenMessage();
+          })
+          .finally(() => {
+            setVarientLoading(false);
+          });
+      }
+    } catch (err) {
+      let errorsList = {};
+      setError({});
+      if (err && err.inner) {
+        err?.inner?.forEach((error) => {
+          if (error?.path) {
+            errorsList[error.path] = error.message;
+          }
+        });
+      }
+      setError(errorsList);
+    }
+  };
+
   const handleUpdateError = (updatedErrorValue) => {
     setError((prev) => ({
       ...prev,
@@ -2066,7 +2323,7 @@ const AddProducts = () => {
         <div class="loading-box">
           <Loader />
         </div>
-      ) : (
+      ) : pageUrl !== "inventory/products/varient-edit" ? (
         <>
           <EditPage
             openEditModal={openEditModal}
@@ -2142,20 +2399,20 @@ const AddProducts = () => {
                   />
                 </div>
                 {/* <div className="q-add-categories-single-input">
-                  <textarea
-                  id="description"
-                  name="description"
-                    rows="4"
-                    cols="50"
-                    value={productInfo?.description}
-                    onChange={handleProductInfo}
-                  ></textarea>
-                  {error?.description ? (
-                    <span className="error-alert">{error?.description}</span>
-                  ) : (
-                    ""
-                  )}
-                </div> */}
+                    <textarea
+                    id="description"
+                    name="description"
+                      rows="4"
+                      cols="50"
+                      value={productInfo?.description}
+                      onChange={handleProductInfo}
+                    ></textarea>
+                    {error?.description ? (
+                      <span className="error-alert">{error?.description}</span>
+                    ) : (
+                      ""
+                    )}
+                  </div> */}
                 <div className="">
                   <div className="q-add-categories-single-input">
                     <SearchableDropdown
@@ -2409,6 +2666,7 @@ const AddProducts = () => {
                     handleCloseEditModal={handleCloseEditModal}
                     productData={productData}
                     varientData={varientData}
+                    isVarientEdit={isVarientEdit}
                   />
                 </div>
 
@@ -2492,6 +2750,73 @@ const AddProducts = () => {
             </div>
           </div>
         </>
+      ) : (
+        <div class="q-attributes-main-page box_shadow_div">
+          <div class="q-add-categories-section">
+            <div class="q-add-categories-section-middle-form">
+              <div className="mt_card_header">
+                <EditPage
+                  openEditModal={openEditModal}
+                  handleCloseEditModal={handleCloseEditModal}
+                  productData={productData}
+                  modalType={modalType}
+                  varientData={varientData}
+                  varientIndex={varientIndex}
+                  formData={formValue}
+                  handleCopyAllVarientValue={handleCopyAllVarientValue}
+                  inventoryData={inventoryData}
+                  fetchProductDataById={fetchProductDataById}
+                  isVarientEdit={isVarientEdit}
+                  fetchSingleVarientData={fetchSingleVarientData}
+                />
+                <GeneratePUC
+                  handleVarientTitleBasedItemList={
+                    handleVarientTitleBasedItemList
+                  }
+                  error={error}
+                  handleGenerateUPC={handleGenerateUPC}
+                  handleOnChange={handleOnChange}
+                  formValue={formValue}
+                  handleBlur={handleBlur}
+                  isMultipleVarient={isMultipleVarient}
+                  productInfo={productInfo}
+                  inventoryData={inventoryData}
+                  handleCloseEditModal={handleCloseEditModal}
+                  productData={productData}
+                  // varientData={varientData}
+                  isVarientEdit={isVarientEdit}
+                />
+              </div>
+              <div  className="q-category-bottom-header varient-box" style={{ marginRight: "0px" }}>
+                <button
+                  className="quic-btn quic-btn-save"
+                  onClick={handleUpdateVarient}
+                  disabled={varientLoading}
+                  style={{
+                    backgroundColor: varientLoading ? "#878787" : "#0A64F9",
+                  }}
+                >
+                  {varientLoading ? (
+                    <Box className="loader-box">
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    "Update"
+                  )}
+                </button>
+                <button
+                  className="quic-btn quic-btn-cancle"
+                  onClick={() => {
+                    navigate("/inventory/products");
+                  }}
+                  style={{ marginLeft: "20px" }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

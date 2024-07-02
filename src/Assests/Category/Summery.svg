@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">
+  <g id="Summery" transform="translate(-1132 -377)">
+    <g id="Rectangle_4174" data-name="Rectangle 4174" transform="translate(1132 377)" fill="#f9f9f9" stroke="#ebebeb" stroke-width="1">
+      <rect width="38" height="38" rx="4" stroke="none"/>
+      <rect x="0.5" y="0.5" width="37" height="37" rx="3.5" fill="none"/>
+    </g>
+    <g id="scroll" transform="translate(1141.273 386.321)">
+      <g id="Group_7842" data-name="Group 7842" transform="translate(0 0)">
+        <g id="Group_7841" data-name="Group 7841" transform="translate(6.206 7.78)">
+          <line id="Line_854" data-name="Line 854" x2="6.5" transform="translate(0.021 0.206)" fill="none" stroke="#0a64f9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.6"/>
+          <line id="Line_855" data-name="Line 855" x2="6.5" transform="translate(0.021 3.207)" fill="none" stroke="#0a64f9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.6"/>
+        </g>
+        <g id="Scroll_1_" transform="translate(0)">
+          <path id="Path_8330" data-name="Path 8330" d="M71.265,23.281H58.141A1.641,1.641,0,0,1,56.5,21.641h0A1.641,1.641,0,0,1,58.141,20H71.265a1.641,1.641,0,0,1,1.641,1.641h0A1.641,1.641,0,0,1,71.265,23.281Z" transform="translate(-55.245 -20)" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.6"/>
+          <line id="Line_856" data-name="Line 856" x1="2" transform="translate(18.227 1.986)" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.6"/>
+          <line id="Line_857" data-name="Line 857" x1="1.5" transform="translate(-0.773 1.986)" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.6"/>
+          <path id="Path_8331" data-name="Path 8331" d="M96.5,100v14.437a1.641,1.641,0,0,0,1.641,1.641H104.7a4.922,4.922,0,0,0,4.922-4.922V103.2" transform="translate(-93.604 -96.719)" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.6"/>
+          <path id="Path_8332" data-name="Path 8332" d="M256.5,338.562a1.641,1.641,0,0,0,1.641-1.641v-1.641a1.641,1.641,0,0,1,1.641-1.641h1.641A1.641,1.641,0,0,0,263.062,332" transform="translate(-247.042 -319.204)" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.6"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

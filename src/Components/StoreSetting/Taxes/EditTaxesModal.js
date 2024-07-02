@@ -12,6 +12,7 @@ import {
   BASE_URL,
   UPDATE_TAXES,
   TAXE_CATEGORY_LIST,
+  FETCH_DATA_TAXE,
 } from "../../../Constants/Config";
 import BasicTextFields from "../../../reuseableComponents/TextInputField";
 import TextField from "@mui/material/TextField";
@@ -22,7 +23,17 @@ import PasswordShow from "../../../Common/passwordShow";
 const EditTaxesModal = ({ selectedTaxe }) => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  // const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setTaxes({
+      title: "",
+      percent: "",
+    });
+    setErrorMessage("")
+    setErrorTitleMessage("")
+    setErrorPerMessage("")
+    setOpen(false);
+  }
 
   const [errorMessage, setErrorMessage] = useState("");
   const dispatch = useDispatch();
@@ -51,16 +62,52 @@ const EditTaxesModal = ({ selectedTaxe }) => {
   const { LoginGetDashBoardRecordJson, LoginAllStore, userTypeData } = useAuthDetails();
   let merchant_id = LoginGetDashBoardRecordJson?.data?.merchant_id;
 
-  useEffect(() => {
-    if (selectedTaxe) {
-      setTaxes({
-        collID: selectedTaxe.id,
-        title: selectedTaxe.title,
-        percent: selectedTaxe.percent,
-        merchant_id: selectedTaxe.merchant_id,
-      });
+  async function fetchData() {
+    const getdefaultsData = {
+      tax_id: selectedTaxe.id,
+      merchant_id:merchant_id,
+      token_id: userTypeData.token_id,
+      login_type: userTypeData.login_type,
+    };
+    try {
+      const response = await axios.post(
+        BASE_URL + FETCH_DATA_TAXE,
+        getdefaultsData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${userTypeData.token}`,
+          },
+        }
+      );
+      if (response.data.status === true) {
+        return response.data.tax_data;
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
     }
-  }, [selectedTaxe]);
+  }
+
+  useEffect(() => {
+    if (open) {
+      const fetchDataAndUpdateState = async () => {
+        const res = await fetchData();
+        if (res) {
+          setTaxes({
+            collID: res?.id,
+            title: res?.title,
+            percent: res?.percent,
+            merchant_id: res?.merchant_id,
+          });
+        }
+      };
+      setApplyToCategory(false)
+
+      fetchDataAndUpdateState();
+    }
+  }, [open, selectedTaxe]);
 
   const [taxes, setTaxes] = useState({
     collID: "",
@@ -75,7 +122,7 @@ const EditTaxesModal = ({ selectedTaxe }) => {
     if (name === "title"){
       if (regex.test(value)) {
         setTaxes({ ...taxes, title: value });
-        setErrorTitleMessage(value ? "" : "*Please enter title");
+        setErrorTitleMessage(value ? "" : "Title is required");
         setErrorMessage("")
       }
     }else{
@@ -109,7 +156,7 @@ const EditTaxesModal = ({ selectedTaxe }) => {
         });
         setErrorPerMessage("");
       }
-      setErrorPerMessage(value ? "" : "*Please enter Percent");
+      setErrorPerMessage(value ? "" : "Percent is required");
     }
   };
 
@@ -163,8 +210,8 @@ const EditTaxesModal = ({ selectedTaxe }) => {
       formData.append("login_type", userTypeData?.login_type);
 
       if(taxes.title === "" || taxes.percent === ""){
-        setErrorTitleMessage(taxes.title ? "" : "*Please enter title");
-        setErrorPerMessage(taxes.percent ? "" : "*Please enter Percent");
+        setErrorTitleMessage(taxes.title ? "" : "Title is required");
+        setErrorPerMessage(taxes.percent ? "" : "Percent is required");
         return;
       }
       setLoader(true);
@@ -190,7 +237,7 @@ const EditTaxesModal = ({ selectedTaxe }) => {
           }
           setCategory("--Select Category--");
           handleClose();
-        } else if (update_message == "Failed" && msg == "*Please enter Title") {
+        } else if (update_message == "Failed" && msg == "Title is required") {
           setErrorMessage(msg);
         } else if (update_message == "Failed" && msg == "Taxes Already Exist") {
           setErrorMessage(msg);
@@ -220,8 +267,8 @@ const EditTaxesModal = ({ selectedTaxe }) => {
       formData.append("login_type", userTypeData?.login_type);
 
       if(taxes.title === "" || taxes.percent === ""){
-        setErrorTitleMessage(taxes.title ? "" : "*Please enter title");
-        setErrorPerMessage(taxes.percent ? "" : "*Please enter Percent");
+        setErrorTitleMessage(taxes.title ? "" : "Title is required");
+        setErrorPerMessage(taxes.percent ? "" : "Percent is required");
         return;
       }
       setLoader(true);
@@ -246,7 +293,7 @@ const EditTaxesModal = ({ selectedTaxe }) => {
           }
           setCategory("--Select Category--");
           handleClose();
-        } else if (update_message == "Failed" && msg == "*Please enter Title") {
+        } else if (update_message == "Failed" && msg == "Title is required") {
           setErrorMessage(msg);
         } else if (update_message == "Failed" && msg == "Taxes Already Exist") {
           setErrorMessage(msg);

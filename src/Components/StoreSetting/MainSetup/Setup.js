@@ -41,7 +41,7 @@ const Setup = () => {
   const [days, setDays] = useState([]);
   const [lastCloseTimeState, setLastCloseTimeState] = useState(true);
   const dispatch = useDispatch();
-  const { LoginGetDashBoardRecordJson, userTypeData } = useAuthDetails();
+  const { LoginGetDashBoardRecordJson, userTypeData,user_id } = useAuthDetails();
   let AuthDecryptDataDashBoardJSONFormat = LoginGetDashBoardRecordJson;
   const merchant_id = AuthDecryptDataDashBoardJSONFormat?.data?.merchant_id;
   const data = {
@@ -141,7 +141,7 @@ const Setup = () => {
 
     const FormData = {
       merchant_id: merchant_id, //
-      user_id: 100, //
+      user_id: user_id, //
       enable_online_order: OnlineOrderStatus,
       is_pickup: EnableOrderNumber, //
       is_deliver: DelEnbale, //

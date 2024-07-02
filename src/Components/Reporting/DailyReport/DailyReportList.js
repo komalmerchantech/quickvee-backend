@@ -48,7 +48,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const DailyReportList = ({ data }) => {
   const [sortOrder, setSortOrder] = useState("asc"); // "asc" for ascending, "desc" for descending
   const dispatch = useDispatch();
-  const { handleCoockieExpire } = PasswordShow();
+  const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
   const {
     LoginGetDashBoardRecordJson,
     LoginAllStore,
@@ -74,8 +74,8 @@ const DailyReportList = ({ data }) => {
 
       await dispatch(fetchdailyreportData(newData)).unwrap();
     } catch (error) {
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
-      dispatch(getAuthInvalidMessage("your session has been expired"));
     }
   };
 

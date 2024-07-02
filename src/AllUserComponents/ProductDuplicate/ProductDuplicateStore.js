@@ -18,7 +18,7 @@ import { ToastifyAlert } from "../../CommonComponents/ToastifyAlert";
 import AlertModal from "../../reuseableComponents/AlertModal";
 import { LuRefreshCw } from "react-icons/lu";
 import BasicTextFields from "../../reuseableComponents/TextInputField";
-
+import PasswordShow from "./../../Common/passwordShow";
 const ProductDuplicateStore = () => {
   const [storeFromError, setStoreFromError] = useState("");
   const [storeToError, setStoreToError] = useState("");
@@ -44,7 +44,7 @@ const ProductDuplicateStore = () => {
   
   const { userTypeData } = useAuthDetails();
   const { token, ...userTypeDataNew } = userTypeData;
-
+  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
   const [storeFromDropdownVisible, setStoreFromDropdownVisible] =
     useState(false);
   const [storeToDropdownVisible, setStoreToDropdownVisible] = useState(false);
@@ -182,8 +182,22 @@ const ProductDuplicateStore = () => {
   }, [MerchantListData, MerchantListData.loading]);
 
   useEffect(() => {
-    dispatch(fetchMerchantsList(userTypeData));
+    // dispatch(fetchMerchantsList(userTypeData));
+    getFetchMerchantsList()
   }, []);
+  const getFetchMerchantsList=async()=>{
+    try{
+      const data = {
+        ...userTypeData
+      };
+      if (data) {
+        await dispatch(fetchMerchantsList(data)).unwrap();
+      }
+    }catch(error){
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
+    }
+  }
 
   const myStyles = {
     height: "300px",
@@ -272,6 +286,8 @@ const ProductDuplicateStore = () => {
         }
       } catch (error) {
         // console.log('33 catch err');
+        handleCoockieExpire()
+        getUnAutherisedTokenMessage()
         ToastifyAlert("Error!", "error");
         return new Error(error);
       }

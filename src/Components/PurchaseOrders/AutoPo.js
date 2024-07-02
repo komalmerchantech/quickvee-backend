@@ -64,7 +64,7 @@ const AutoPo = ({ purchaseInfo, setPurchaseInfoErrors }) => {
   const navigate = useNavigate();
 
   const { userTypeData, LoginGetDashBoardRecordJson } = useAuthDetails();
-  const [selectedProducts, setSelectedProducts] = useState([
+  const initialState = [
     {
       id: "",
       variantId: "",
@@ -79,7 +79,8 @@ const AutoPo = ({ purchaseInfo, setPurchaseInfoErrors }) => {
       finalPrice: "0.00",
       upc: "",
     },
-  ]);
+  ];
+  const [selectedProducts, setSelectedProducts] = useState(initialState);
 
   const [loaders, setLoaders] = useState({
     autoPo: false,
@@ -194,25 +195,37 @@ const AutoPo = ({ purchaseInfo, setPurchaseInfoErrors }) => {
 
     const res = await dispatch(fetchProductsData(name_data));
 
-    const data = res.payload
-      ?.map((prod) => ({
-        label: prod.title,
-        value: prod.id,
-        variantId: prod.isvarient === "1" ? prod.var_id : null,
-      }))
-      .filter((prod) => {
-        const productFound = selectedProducts?.find(
-          (product) =>
-            (product.variant &&
-              product.id === prod.variantId &&
-              product.product_id === prod.value) ||
-            (!product.variant && product.id === prod.value)
-        );
+    // console.log("api data: ", res.payload);
+
+    const data = res.payload?.map((prod) => ({
+      label: prod.title,
+      value: prod.id,
+      variantId: prod.isvarient === "1" ? prod.var_id : null,
+    }));
+
+    const filteredProducts =
+      data &&
+      data.length > 0 &&
+      data.filter((prod) => {
+        const productFound =
+          selectedProducts &&
+          selectedProducts.length > 0 &&
+          selectedProducts.find(
+            (product) =>
+              (product.variant &&
+                product.id === prod.variantId &&
+                product.product_id === prod.value) ||
+              (!product.variant && product.id === prod.value)
+          );
+
+        // console.log("curr prod: ", prod)
 
         return !productFound;
       });
 
-    return data;
+    // console.log("filteredProducts data: ", filteredProducts);
+
+    return filteredProducts || [];
   };
 
   useEffect(() => {
@@ -511,15 +524,20 @@ const AutoPo = ({ purchaseInfo, setPurchaseInfoErrors }) => {
           },
         });
 
-        // console.log("response: ", response);
         if (response.data.status && response.data.result.length > 0) {
           const temp = response.data.result.map((prod) => ({
             upc: prod.upc,
             id: prod.variant_id ? prod.variant_id : prod.product_id,
             product_id: prod.variant_id ? prod.product_id : "",
-            quantity: prod.item_qty,
+            quantity: prod.item_qty || 0,
             newQty: prod.reorder_qty || 0,
-            newPrice: prod.costperItem || 0,
+            newPrice:
+              prod.preferd_vendor_cost &&
+              parseFloat(prod.preferd_vendor_cost) > 0
+                ? prod.preferd_vendor_cost
+                : prod.costperItem && parseFloat(prod.costperItem) > 0
+                  ? prod.costperItem
+                  : 0,
             finalQty:
               (Number(prod.item_qty) || 0) + (Number(prod.reorder_qty) || 0),
             finalPrice:
@@ -529,10 +547,9 @@ const AutoPo = ({ purchaseInfo, setPurchaseInfoErrors }) => {
             variant: prod.variant ? prod.variant : "",
           }));
 
-          // console.log("temp: ", temp);
-
           setSelectedProducts(temp);
         } else if (!response.data.status) {
+          setSelectedProducts(initialState);
           ToastifyAlert(response.data.message, "error");
         }
       } else {
@@ -549,25 +566,6 @@ const AutoPo = ({ purchaseInfo, setPurchaseInfoErrors }) => {
     <div className="auto-po-container">
       <div className="box">
         <div className="box_shadow_div" style={{ overflow: "unset" }}>
-          {/* <div className="py-7 px-6">
-            <div className="q_searchBar sticky z-index-2">
-              <Grid container>
-                <Grid item xs={12}>
-                  <AsyncSelect
-                    closeMenuOnSelect={true}
-                    value={null}
-                    loadOptions={productOptions}
-                    onChange={(option) => {
-                      getProductData(option.value, option.variantId);
-                    }}
-                    placeholder="Search Product by Title or UPC"
-                  />
-                </Grid>
-              </Grid>
-            </div>
-          </div> */}
-
-          {/* {selectedProducts.length > 0 ? ( */}
           <Grid container className="z-index-1">
             <TableContainer>
               <StyledTable sx={{ minWidth: 500 }} aria-label="customized table">
@@ -694,7 +692,6 @@ const AutoPo = ({ purchaseInfo, setPurchaseInfoErrors }) => {
               </StyledTable>
             </TableContainer>
           </Grid>
-          {/* ) : null} */}
 
           {purchaseInfo.selectedVendor || selectedProducts.length > 0 ? (
             <div className="flex justify-between w-full py-4 px-6">

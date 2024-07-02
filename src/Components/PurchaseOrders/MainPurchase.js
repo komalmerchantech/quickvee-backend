@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
 import PurchaseTable from "./PurchaseTable";
-// import AddPo from "./AddPo";
 
 const MainPurchase = () => {
   const [visible, seVisible] = useState("PurchaseTable");

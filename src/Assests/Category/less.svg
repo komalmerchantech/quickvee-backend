@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="38" height="38" viewBox="0 0 38 38">
+  <defs>
+    <clipPath id="clip-path">
+      <path id="path105" d="M0-682.665H19.358v19.358H0Z" transform="translate(0 682.665)"/>
+    </clipPath>
+  </defs>
+  <g id="less_than_100_." data-name="less than 100%." transform="translate(-1132 -377)">
+    <g id="Rectangle_4174" data-name="Rectangle 4174" transform="translate(1132 377)" fill="#f9f9f9" stroke="#ebebeb" stroke-width="1">
+      <rect width="38" height="38" rx="4" stroke="none"/>
+      <rect x="0.5" y="0.5" width="37" height="37" rx="3.5" fill="none"/>
+    </g>
+    <g id="g99" transform="translate(1141.45 386.693)">
+      <g id="g101">
+        <g id="g103" clip-path="url(#clip-path)">
+          <g id="g109" transform="translate(0.756 0.756)">
+            <path id="path111" d="M-481.934-611.486h-10.284A3.781,3.781,0,0,1-496-615.267v-10.284a3.781,3.781,0,0,1,3.781-3.781h10.284a3.781,3.781,0,0,1,3.781,3.781v10.284A3.781,3.781,0,0,1-481.934-611.486Z" transform="translate(495.999 629.332)" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.6"/>
+          </g>
+          <g id="g113" transform="translate(6.733 4.726)">
+            <path id="path115" d="M-168.417-336.835l-4.222-3.452a1.889,1.889,0,0,1,0-2.925l4.222-3.452" transform="translate(173.333 346.666)" fill="none" stroke="#0a64f9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1.6"/>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

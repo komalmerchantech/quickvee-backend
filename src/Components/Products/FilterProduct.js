@@ -193,6 +193,8 @@ const FilterProduct = ({
                 <CategoryListDropDown
                   type="category"
                   onCategoryChange={handleCategoryChange}
+                  searchId={searchId}
+                  selectedStatus={selectedStatus}
                 />
               </Grid>
               <Grid item xs={12} sm={6} md={4}>

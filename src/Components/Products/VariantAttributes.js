@@ -290,6 +290,7 @@ const VariantAttributes = ({
 
               {varientLength.length > 0
                 ? varientLength?.map((varient, index) => {
+                  console.log('varient =>>> ', varient);
                     return (
                       <div class="qvrow varientAddSection" key={index + 1}>
                         <div class="col-qv-5">

@@ -119,6 +119,30 @@ export const getInventorySetting = createAsyncThunk(
   }
 );
 
+export const getInventorySettingOnVarient = createAsyncThunk(
+  "products/getInventorySettingOnVarient",
+  async (payload) => {
+    const token = payload.get('token'); // Extract the token from FormData
+    payload.delete('token');
+    try {
+      const response = await axios.post(
+        BASE_URL + "Profile_setup/inventory_register_setting",
+        payload,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return response?.data;
+    } catch (error) {
+      throw new Error(error.response.data.message);
+    }
+  }
+);
+
 export const editProductData = createAsyncThunk(
   "products/editProduct",
   async (payload) => {
@@ -604,6 +628,82 @@ export const checkUpcCodeSingle = createAsyncThunk(
   }
 );
 
+
+export const checkUpcOnVarientEdit = createAsyncThunk(
+  "products/checkUpcOnVarientEdit",
+  async (payload) => {
+    // const token = payload.get('token'); // Extract the token from FormData
+    // payload.delete('token');
+    const {token, ...newData} = payload;
+    try {
+      const response = await axios.post(
+        BASE_URL + "Product_api_react/check_upc_new",
+        newData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response?.data;
+    } catch (error) {
+      throw new Error(error.response.data.message);
+    }
+  }
+);
+
+
+export const updateEditVarient = createAsyncThunk(
+  "products/updateEditVarient",
+  async (payload) => {
+    // const token = payload.get('token'); // Extract the token from FormData
+    // payload.delete('token');
+    console.log('update var', payload);
+    const {token, ...newData} = payload;
+    try {
+      const response = await axios.post(
+        BASE_URL + "Product_api_react/update_variant",
+        newData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response?.data;
+    } catch (error) {
+      throw new Error(error.response.data.message);
+    }
+  }
+);
+
+
+
+export const fetchVarietDataById = createAsyncThunk(
+  "products/fetchVarietDataById",
+  async (payload) => {
+    const token = payload.get('token'); // Extract the token from FormData
+    payload.delete('token');
+    
+    try {
+      const response = await axios.post(
+        BASE_URL + "Product_api_react/get_variantdata_ById",
+        payload,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response?.data;
+    } catch (error) {
+      throw new Error(error.response.data.message);
+    }
+  }
+);
 const productsSlice = createSlice({
   name: "products",
   initialState,
@@ -668,13 +768,13 @@ const productsSlice = createSlice({
       }
       // Append new items to the productsData array
       // console.log(state);
-      const productIds = new Set(state.productsData.map(product => product.id));
+      const productIds = new Set(state.productsData.map(product => product.title));
   
       // Append new items to the productsData array if they are not already present
       action.payload.forEach(product => {
-        if (!productIds.has(product.id)) {
+        if (!productIds.has(product.title)) {
           state.productsData.push(product);
-          productIds.add(product.id);
+          productIds.add(product.title);
         }
       });
       state.offset += 10;

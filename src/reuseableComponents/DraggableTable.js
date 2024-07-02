@@ -68,6 +68,7 @@ const DraggableTable = ({
   setProductId,
   seVisible,
 }) => {
+  console.log('tableRow', tableRow);
   const dispatch = useDispatch();
   const { LoginGetDashBoardRecordJson, LoginAllStore, userTypeData } =
     useAuthDetails();
@@ -199,6 +200,7 @@ const DraggableTable = ({
   };
 
   const confirmDeleteCategory = async () => {
+    console.log('run this drag');
     const sourceIndex = dragresult.source.index;
     const targetIndex = dragresult.destination.index;
     const reorderedItems = reorder(tableRow, sourceIndex, targetIndex);

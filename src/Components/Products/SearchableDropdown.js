@@ -23,7 +23,6 @@ const SearchableDropdown = ({
     const { value } = e.target;
 
     const filterList = optionList.filter((item) => {
-      // console.log(item)
       return item.name.toLowerCase().includes(value.toLowerCase());
     });
     setFilterOptions(

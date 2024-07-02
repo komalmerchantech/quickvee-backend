@@ -268,6 +268,17 @@ padding-right: 30px !important;
   font-family: CircularSTDBook !important;
 }
 
+.varient-edit-text{
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.varient-edit-text .title{
+  font-size: 18px !important;
+  color: #000;
+  font-family: CircularSTDBook !important;
+}
 
 /* product page edit modal css */
 .product-edit-modal {
@@ -666,4 +677,9 @@ box-sizing: border-box;
 
 .varientAddSection .input_area  .css-1xc3v61-indicatorContainer{
   /* padding: 0px !important; */
+}
+
+
+.varient-box{
+  justify-content: start !important;
 }

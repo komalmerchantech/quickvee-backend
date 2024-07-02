@@ -31,6 +31,7 @@ const AddEmployeeFormLogic = ({ employeeList }) => {
   // const Navigate = useNavigate();
   const scrollRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
+  const [loader, setLoader] = useState(false);
 
   const { LoginGetDashBoardRecordJson, LoginAllStore, userTypeData } =
     useAuthDetails();
@@ -121,41 +122,87 @@ const AddEmployeeFormLogic = ({ employeeList }) => {
   //   }
   // };
 
-  const handleAddEmployeeInput = async (event) => {
+  // const handleAddEmployeeInput = async (event) => {
+  //   let { errors } = values;
+  //   const fieldName = event.target.name;
+  //   const fieldValue = event.target.value;
+
+  //   switch (fieldName) {
+  //     case "firstname":
+  //       await validateFirstName(fieldValue, errors);
+  //       break;
+  //     case "lastname":
+  //       await validateLastName(fieldValue, errors);
+  //       break;
+  //     case "email":
+  //       await validateEmail(fieldValue, errors);
+  //       break;
+  //     case "phone":
+  //       await validatePhoneNumber(fieldValue, errors);
+  //       break;
+  //     case "pin":
+  //       await validatePinNumber(fieldValue, errors, employeeList);
+  //       break;
+  //     case "wages":
+  //       await validateWages(fieldValue, errors);
+  //       break;
+  //     case "address_line_1":
+  //       await Address_line_1(fieldValue, errors);
+  //       break;
+  //     case "city":
+  //       await validateCity(fieldValue, errors);
+  //       break;
+  //     case "zipcode":
+  //       await validateZipCode(fieldValue, errors);
+  //       break;
+  //     case "state":
+  //       await validateState(fieldValue, errors);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   setValues((prevValues) => ({
+  //     errors,
+  //     ...prevValues,
+  //     [fieldName]: fieldValue,
+  //   }));
+  // };
+  const handleAddEmployeeInput = (event) => {
     let { errors } = values;
     const fieldName = event.target.name;
     const fieldValue = event.target.value;
 
     switch (fieldName) {
       case "firstname":
-        await validateFirstName(fieldValue, errors);
+        validateFirstName(fieldValue, errors);
         break;
       case "lastname":
-        await validateLastName(fieldValue, errors);
+        validateLastName(fieldValue, errors);
         break;
       case "email":
-        await validateEmail(fieldValue, errors);
+        validateEmail(fieldValue, errors);
         break;
       case "phone":
-        await validatePhoneNumber(fieldValue, errors);
+        validatePhoneNumber(fieldValue, errors);
         break;
       case "pin":
-        await validatePinNumber(fieldValue, errors, employeeList);
+        validatePinNumber(fieldValue, errors, employeeList);
         break;
       case "wages":
-        await validateWages(fieldValue, errors);
+        validateWages(fieldValue, errors);
         break;
       case "address_line_1":
-        await Address_line_1(fieldValue, errors);
+        Address_line_1(fieldValue, errors);
         break;
       case "city":
-        await validateCity(fieldValue, errors);
+        validateCity(fieldValue, errors);
         break;
       case "zipcode":
-        await validateZipCode(fieldValue, errors);
+        validateZipCode(fieldValue, errors);
         break;
       case "state":
-        await validateState(fieldValue, errors);
+        validateState(fieldValue, errors);
         break;
       default:
         break;
@@ -233,6 +280,7 @@ const AddEmployeeFormLogic = ({ employeeList }) => {
         token_id: userTypeData?.token_id,
         login_type: userTypeData?.login_type,
       };
+      setLoader(true);
 
       try {
         const response = await axios.post(BASE_URL + ADDEDIT_EMPLOYEE, data, {
@@ -243,6 +291,7 @@ const AddEmployeeFormLogic = ({ employeeList }) => {
         });
         console.log(response.data);
         if (response.data.status === true) {
+          setLoader(false);
           ToastifyAlert("Added Successfully", "success");
           const latest_employee = response.data.inserted_data;
           dispatch(addToEmployeeList(latest_employee));
@@ -270,6 +319,7 @@ const AddEmployeeFormLogic = ({ employeeList }) => {
           values.errors.state = "";
           // Navigate("/");
         } else {
+          setLoader(false);
           setsubmitmessage(response.data.message);
           setShowModal(true);
         }
@@ -297,6 +347,7 @@ const AddEmployeeFormLogic = ({ employeeList }) => {
     setShowModal,
     scrollRef,
     handleKeyPress,
+    loader,
     // handleBlur,
   };
 };

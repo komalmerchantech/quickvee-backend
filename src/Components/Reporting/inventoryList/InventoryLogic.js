@@ -14,7 +14,7 @@ export default function InventoryLogic() {
   const dispatch = useDispatch();
   const { LoginGetDashBoardRecordJson, LoginAllStore, userTypeData } =
     useAuthDetails();
-  const { handleCoockieExpire } = PasswordShow();
+  const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
   const [inventory, setInventory] = useState("");
   const [category, setCategory] = useState([]);
   const [searchProduct, setsearchProduct] = useState([]); // invenotry list display
@@ -70,7 +70,7 @@ export default function InventoryLogic() {
         }
       }
     } catch (error) {
-      dispatch(getAuthInvalidMessage("your session has been expired"));
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
     }
   };
@@ -92,7 +92,7 @@ export default function InventoryLogic() {
         //   setSelectCategoryId(response?.data?.result[0].id);
       }
     } catch (error) {
-      dispatch(getAuthInvalidMessage("your session has been expired"));
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
     }
   };
@@ -138,7 +138,7 @@ export default function InventoryLogic() {
         setsearchProduct([]);
       }
     } catch (error) {
-      dispatch(getAuthInvalidMessage("your session has been expired"));
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
     }
   };
@@ -182,7 +182,7 @@ export default function InventoryLogic() {
         setsearchProduct([]);
       }
     } catch (error) {
-      dispatch(getAuthInvalidMessage("your session has been expired"));
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
     }
   };
@@ -211,6 +211,6 @@ export default function InventoryLogic() {
     handleLoadMore,
     laodMoreData,
     loader,
-    sortByItemName
+    sortByItemName,
   };
 }

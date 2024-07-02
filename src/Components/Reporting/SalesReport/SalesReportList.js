@@ -42,7 +42,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const SalesReportList = (props) => {
   const dispatch = useDispatch();
-  const { handleCoockieExpire } = PasswordShow();
+  const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
   const {
     LoginGetDashBoardRecordJson,
     LoginAllStore,
@@ -74,8 +74,8 @@ const SalesReportList = (props) => {
         try {
           await dispatch(fetchSalesReportData(data)).unwrap();
         } catch (error) {
+          getUnAutherisedTokenMessage();
           handleCoockieExpire();
-          dispatch(getAuthInvalidMessage("your session has been expired"));
         }
       }
     }
@@ -199,9 +199,9 @@ const SalesReportList = (props) => {
     },
   ];
 
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const formatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   });
   return (
     <>
@@ -302,7 +302,9 @@ const SalesReportList = (props) => {
                                 : "",
                           }}
                         >
-                          <p>${priceFormate(parseFloat(item.amount).toFixed(2))}</p>
+                          <p>
+                            ${priceFormate(parseFloat(item.amount).toFixed(2))}
+                          </p>
                         </StyledTableCell>
                       </StyledTableRow>
                     ))}
@@ -354,7 +356,9 @@ const SalesReportList = (props) => {
                               item.name === "Amount Collected" ? "#0A64F9" : "",
                           }}
                         >
-                          <p>${priceFormate(parseFloat(item.amount).toFixed(2))}</p>
+                          <p>
+                            ${priceFormate(parseFloat(item.amount).toFixed(2))}
+                          </p>
                         </StyledTableCell>
                       </StyledTableRow>
                     ))}

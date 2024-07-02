@@ -23,6 +23,8 @@ const EditPage = ({
   handleCopyAllVarientValue,
   inventoryData,
   fetchProductDataById,
+  isVarientEdit,
+  fetchSingleVarientData
 }) => {
   const [value, setValue] = React.useState("1");
 
@@ -35,7 +37,7 @@ const EditPage = ({
       setValue("2");
     } else if (modalType === "single_instant") {
       setValue("3");
-    } else {
+    } else {  
       setValue("1");
     }
   }, [modalType]);
@@ -104,6 +106,7 @@ const EditPage = ({
                   <BulkVendorEdit
                     productData={productData}
                     varientIndex={varientIndex}
+                    isVarientEdit={isVarientEdit}
                     modalType={modalType}
                     handleCloseEditModal={handleCloseEditModal}
                   />
@@ -113,9 +116,11 @@ const EditPage = ({
                     productData={productData}
                     modalType={modalType}
                     varientIndex={varientIndex}
+                    isVarientEdit={isVarientEdit}
                     varientData={varientData}
                     handleCloseEditModal={handleCloseEditModal}
                     fetchProductDataById={fetchProductDataById}
+                    fetchSingleVarientData={fetchSingleVarientData}
                     inventoryData={inventoryData}
 
                   />

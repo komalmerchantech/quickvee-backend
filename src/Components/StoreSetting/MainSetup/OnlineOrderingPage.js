@@ -20,15 +20,19 @@ const OnlineOrderingPage = ({ onlineorderstatus }) => {
   const setupDataState = useSelector(
     (state) => state?.StoreSetupList?.storesetupData
   );
-
+  console.log("isChecked",isChecked)
+  console.log("setupDataState?.offline ",setupDataState?.offline)
   useEffect(() => {
     if (setupDataState?.offline) {
-      setisChecked(setupDataState?.offline);
+      setisChecked(setupDataState?.offline === "1" ? "0" : "1");
     }
   }, [setupDataState]);
   useEffect(() => {
     // console.log(setupDataState?.clover_customer_id)
-    onlineorderstatus(isEnableOrderNumber);
+    
+      onlineorderstatus(setupDataState?.offline)
+    
+    
   }, [setupDataState, isEnableOrderNumber]);
 
   return (

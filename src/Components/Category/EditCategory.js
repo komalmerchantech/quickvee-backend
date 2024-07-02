@@ -20,7 +20,7 @@ import { useAuthDetails } from "../../Common/cookiesHelper";
 import DeleteModal from "../../reuseableComponents/DeleteModal";
 import AlertModal from "../../reuseableComponents/AlertModal";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import PasswordShow from "../../Common/passwordShow";
 const EditCategory = ({ productId,seVisible }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -31,7 +31,7 @@ const EditCategory = ({ productId,seVisible }) => {
     GetSessionLogin,
   } = useAuthDetails();
   const [loader, setLoader] = useState(false);
-
+  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
   const [category, setCategory] = useState({
     collID: "",
     title: "",
@@ -66,6 +66,8 @@ const EditCategory = ({ productId,seVisible }) => {
       }
     } catch (error) {
       console.error("Error:", error);
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
     }
   }
 
@@ -208,6 +210,8 @@ const EditCategory = ({ productId,seVisible }) => {
       }
     } catch (error) {
       console.error("API Error:", error);
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
     }
     setLoader(false);
   };
@@ -284,7 +288,7 @@ const EditCategory = ({ productId,seVisible }) => {
     setDeleteCategoryIMG(removeitem);
     setDeleteModalOpen(true);
   };
-  const confirmDeleteCategory = (event) => {
+  const confirmDeleteCategory = async (event) => {
     if (deleteCategoryId) {
       const data = {
         id: deleteCategoryId,
@@ -293,7 +297,12 @@ const EditCategory = ({ productId,seVisible }) => {
         ...userTypeData,
       };
       if (data) {
-        dispatch(deleteCategorybanner(data));
+        try {
+         await dispatch(deleteCategorybanner(data)).unwrap();
+        } catch (error) {
+          handleCoockieExpire()
+          getUnAutherisedTokenMessage()
+        }
         ToastifyAlert("Category Image Deleted", "success");
         setSelectedImage(null);
         setCategory((prevValue) => ({

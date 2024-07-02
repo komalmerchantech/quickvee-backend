@@ -92,6 +92,7 @@ export default function ProtectedRoute(props) {
     props.visible == "superadmin" &&
     AdminRocord?.data?.merchant_id == ""
   ) {
+    dispatch(setIsStoreActive(false));
     return <Outlet />;
   } else if (
     AdminRocord?.status == true &&
@@ -99,8 +100,9 @@ export default function ProtectedRoute(props) {
     props.visible == "superadmin" &&
     AdminRocord?.data?.merchant_id !== ""
   ) {
-    return <Outlet />;
-    // return <Navigate to="/" />;
+    dispatch(setIsStoreActive(true));
+    // return <Outlet />;
+    return <Navigate to="/" />;
   } else if (
     AdminRocord?.status == true &&
     (AdminRocord?.login_type == "superadmin" ||
@@ -119,6 +121,7 @@ export default function ProtectedRoute(props) {
     return <Outlet />;
   } else {
     handleClearCoockie();
+    dispatch(setIsStoreActive(false));
     return <Navigate to="/login" />;
   }
 }

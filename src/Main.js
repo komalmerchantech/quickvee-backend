@@ -47,6 +47,7 @@ const Main = ({ visible }) => {
       {visible === "product-edit" && <Layout visible={visible} />}
       {visible === "product-sales" && <Layout visible={visible} />}
       {visible === "product-add" && <Layout visible={visible} />}
+      {visible === "edit-varient" && <Layout visible={visible} />}
       {visible === "add-po" && <Layout visible={visible} />}
       {visible === "store" && <Layout visible={visible} />}
       {visible === "manager" && <Layout visible={visible} />}
@@ -114,6 +115,7 @@ const Main = ({ visible }) => {
 
       {visible === "create_permission" && <IndexAllUsers visible={visible} />}
       {visible === "invertory-export" && <IndexAllUsers visible={visible} />}
+      {visible === "support-details" && <IndexAllUsers visible={visible} />}
       {visible === "merchant-details" && <IndexAllUsers visible={visible} />}
 
       {visible === "edit-defaults" && <IndexAllUsers visible={visible} />}

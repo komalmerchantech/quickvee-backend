@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { CircularProgress, Grid } from "@mui/material";
 import AddSvg from "../../Assests/Dashboard/Left.svg";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
@@ -44,7 +44,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const StocktakeReport = ({ setVisible }) => {
   const [singleStocktakeState, setSingleStocktakeState] = useState();
-
+  const [loader, setLoader] = useState(false);
   const { LoginGetDashBoardRecordJson, userTypeData } = useAuthDetails();
   const { data: { merchant_id } = {} } = LoginGetDashBoardRecordJson;
 
@@ -91,6 +91,7 @@ const StocktakeReport = ({ setVisible }) => {
       stocktake_id: singleStocktakeState.id,
     };
     try {
+      setLoader(true);
       const { token, ...otherUserData } = userTypeData;
       const response = await axios.post(
         `${BASE_URL}${VOID_STOCKTAKE}`,
@@ -104,12 +105,16 @@ const StocktakeReport = ({ setVisible }) => {
       );
       if (response.data.status) {
         ToastifyAlert(response.data.message, "success");
+        setTimeout(()=>{setLoader(false);},300)
+        
       } else {
         ToastifyAlert(response.data.message, "error");
+        setTimeout(()=>{setLoader(false);},300)
       }
     } catch (error) {
       console.error("Error voiding stocktake:", error);
       ToastifyAlert("Error voiding stocktake. Please try again.", "error");
+      setTimeout(()=>{setLoader(false);},300)
     }
     // setVisible("StocktakeList");
     navigate(-1);
@@ -120,7 +125,17 @@ const StocktakeReport = ({ setVisible }) => {
       state: { data: singleStocktakeState },
     });
   };
-
+  const formatCurrency = (amount) => {
+    const formattedAmount = Math.abs(
+      amount
+    ).toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+    });
+    return amount < 0
+      ? `-${formattedAmount}`
+      : formattedAmount;
+  };
   return (
     <Grid container className="box_shadow_div">
       <Grid item xs={12}>
@@ -164,8 +179,8 @@ const StocktakeReport = ({ setVisible }) => {
                       <StyledTableCell>{item.discrepancy}</StyledTableCell>
 
                       <StyledTableCell>
-                        $
-                        {priceFormate(
+                        
+                        {formatCurrency(
                           parseFloat(item.discrepancy_cost).toFixed(2)
                         )}
                       </StyledTableCell>
@@ -191,7 +206,7 @@ const StocktakeReport = ({ setVisible }) => {
 
                     <StyledTableCell>
                       <p className="text-[#0A64F9]">
-                        ${singleStocktakeState?.total_discrepancy_cost}
+                        {formatCurrency(singleStocktakeState?.total_discrepancy_cost)}
                       </p>
                     </StyledTableCell>
 
@@ -218,7 +233,7 @@ const StocktakeReport = ({ setVisible }) => {
                     // setVisible("StocktakeList");
                     navigate(-1);
                   }}
-                  className="quic-btn quic-btn-cancle"
+                  className="quic-btn quic-btn-cancle w-32"
                 >
                   Cancel
                 </button>
@@ -227,17 +242,23 @@ const StocktakeReport = ({ setVisible }) => {
               {singleStocktakeState?.status === "0" && (
                 <Grid item>
                   <button
-                    className="quic-btn 
-
-               quic-btn-save
-
-               "
+                    className="quic-btn quic-btn-save attributeUpdateBTN w-32"
                     onClick={handleVoidClick}
-
-                    //   disabled={loader}
+                      disabled={loader}
                   >
-                    void
-                    {/* {loader ? <CircularProgress /> : "Update"} */}
+                    {loader ? (
+                      <>
+                        <CircularProgress
+                          color={"inherit"}
+                          className="loaderIcon"
+                          width={15}
+                          size={15}
+                        />
+                        void
+                      </>
+                    ) : (
+                      "void"
+                    )}
                   </button>
                 </Grid>
               )}
@@ -253,7 +274,7 @@ const StocktakeReport = ({ setVisible }) => {
 
                 <Grid item>
                   <button
-                    className="quic-btn quic-btn-save"
+                    className="quic-btn quic-btn-save w-32"
                     onClick={handlePrint}
 
                     //   disabled={loader}

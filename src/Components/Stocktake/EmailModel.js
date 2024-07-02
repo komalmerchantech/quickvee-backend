@@ -69,8 +69,8 @@ const EmailModel = ({singleStocktakeState}) => {
           },
         }
       );
-      if (response.data.status) {
-        ToastifyAlert(response.data.message, "success");
+      if (response.status===200) {
+        ToastifyAlert("Email send successfully", "success");
         setLoader(false)
       } else {
         ToastifyAlert(response.data.message, "error");
@@ -78,6 +78,7 @@ const EmailModel = ({singleStocktakeState}) => {
       }
     } catch (error) {
       console.error("Error creating stocktake:", error);
+      ToastifyAlert(error.message, "error");
       setLoader(false)
     }
     // Handle send email action here
@@ -96,7 +97,7 @@ const EmailModel = ({singleStocktakeState}) => {
             onClick={() => {
               // handleCreateStocktake("1");
             }}
-            className="quic-btn quic-btn-save"
+            className="quic-btn quic-btn-save w-32"
           >
             Email
           </button>
@@ -115,7 +116,7 @@ const EmailModel = ({singleStocktakeState}) => {
                 fontFamily: "CircularSTDBook",
               }}
             >
-              <p className="">mail</p>
+              <p className="">Send Email</p>
               <div>
                 <div
                   className="flex justify-between gap-4"

@@ -12,7 +12,7 @@ import { getAuthInvalidMessage } from "../../../Redux/features/Authentication/lo
 
 export default function Discount_per_sales_logic() {
   const dispatch = useDispatch();
-  const { handleCoockieExpire } = PasswordShow();
+  const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
   const [allEmployee, setAllEmployee] = React.useState([]);
   const [selectedEmployee, setSelectedEmployee] = React.useState("");
   const [EmployeeFilterData, setEmployeeFilterData] = React.useState([]);
@@ -44,7 +44,7 @@ export default function Discount_per_sales_logic() {
           // Array.isArray(res?.data?.result)
         });
     } catch (error) {
-      dispatch(getAuthInvalidMessage("your session has been expired"));
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
       console.error("Error fetching Employee List:", error);
     }
@@ -91,7 +91,7 @@ export default function Discount_per_sales_logic() {
         });
     } catch (error) {
       console.error("Error fetching Employee List:", error);
-      dispatch(getAuthInvalidMessage("your session has been expired"));
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
     }
 

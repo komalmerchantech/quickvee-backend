@@ -47,7 +47,7 @@ const TopSallerList = ({ data }) => {
 
   const [topsaller, settopsaller] = useState([]);
   const topsallerDataState = useSelector((state) => state.topsaller);
-  const { handleCoockieExpire } = PasswordShow();
+  const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
 
   useEffect(() => {
     getTopSellerData();
@@ -61,8 +61,8 @@ const TopSallerList = ({ data }) => {
         await dispatch(fetchtopsallerData(data)).unwrap();
       }
     } catch (error) {
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
-      dispatch(getAuthInvalidMessage("your session has been expired"));
     }
   };
 
@@ -134,15 +134,14 @@ const TopSallerList = ({ data }) => {
                       </button>
                     </StyledTableCell>
                     <StyledTableCell>
-                    <button
+                      <button
                         className="flex items-center"
                         onClick={() => sortByItemName("num", "total_sold")}
                       >
                         <p>Quantity Sold</p>
                         <img src={SortIcon} alt="" className="pl-1" />
                       </button>
-                      
-                      </StyledTableCell>
+                    </StyledTableCell>
                   </TableHead>
 
                   <TableBody>

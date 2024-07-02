@@ -18,7 +18,7 @@ import { ToastifyAlert } from "../../CommonComponents/ToastifyAlert";
 import AlertModal from "../../reuseableComponents/AlertModal";
 import { Link, useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import PasswordShow from "../../Common/passwordShow";
 const AddCategory = ({ seVisible }) => {
   const {
     LoginGetDashBoardRecordJson,
@@ -32,7 +32,7 @@ const AddCategory = ({ seVisible }) => {
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const [alertModalHeaderText, setAlertModalHeaderText] = useState("");
   const [loader, setLoader] = useState(false);
-
+  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
   const [category, setCategory] = useState({
     title: "",
     description: "",
@@ -187,6 +187,8 @@ const AddCategory = ({ seVisible }) => {
         }
       } catch (error) {
         console.error("API Error:", error);
+        handleCoockieExpire()
+        getUnAutherisedTokenMessage()
       }
       setLoader(false);
     }

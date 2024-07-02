@@ -115,6 +115,7 @@ module.exports = Object.freeze({
   LIST_ALL_TAXES: "Taxes_react_api/Taxes_list",
   DELETE_SINGLE_TAXE: "Taxes_react_api/delete_tax",
   TAXE_CATEGORY_LIST: "Taxes_react_api/Taxes_category_list",
+  FETCH_DATA_TAXE: "Taxes_react_api/edit_taxes",
 
   // All Reports API
   CHECKID_VARIFICATION_REPORT_LIST:

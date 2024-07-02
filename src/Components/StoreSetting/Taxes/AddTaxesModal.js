@@ -62,7 +62,7 @@ const AddTaxesModal = () => {
     if (name === "title"){
       if (regex.test(value)) {
         setTaxes({ ...taxes, title: value });
-        setErrorTitleMessage(value ? "" : "*Please enter title");
+        setErrorTitleMessage(value ? "" : "Title is required");
         setErrorMessage("")
       }
     }else{
@@ -97,7 +97,7 @@ const AddTaxesModal = () => {
         });
         setErrorPerMessage("");
       }
-      setErrorPerMessage(value ? "" : "*Please enter Percent");
+      setErrorPerMessage(value ? "" : "Percent is required");
 
     }
 
@@ -132,8 +132,8 @@ const AddTaxesModal = () => {
     formData.append("login_type", userTypeData?.login_type);
 
     if(taxes.title === "" || taxes.percent === ""){
-      setErrorTitleMessage(taxes.title ? "" : "*Please enter title");
-      setErrorPerMessage(taxes.percent ? "" : "*Please enter Percent");
+      setErrorTitleMessage(taxes.title ? "" : "Title is required");
+      setErrorPerMessage(taxes.percent ? "" : "Percent is required");
       return;
     }
     setLoader(true);
@@ -167,7 +167,7 @@ const AddTaxesModal = () => {
         update_message == "DefaultTax Taxes Already Exist"
       ) {
         setErrorMessage("*The name is already exist");
-      } else if (data == "Failed" && update_message == "*Please enter Title") {
+      } else if (data == "Failed" && update_message == "Title is required") {
         setErrorMessage(update_message);
       }
     } catch (error) {

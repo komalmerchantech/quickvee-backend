@@ -59,8 +59,14 @@ const RefundSummaryList = ({ data }) => {
   }, [data]);
 
   useEffect(() => {
-    if (!RefundReportData.loading && RefundReportData?.refundreportData) {
-      setrefundData(RefundReportData.refundreportData);
+    if (!RefundReportData.loading && Array.isArray(RefundReportData?.refundreportData) && RefundReportData.refundreportData.length > 0) {
+      console.log("Refunding",RefundReportData?.refundreportData) 
+      const updatedItems = RefundReportData.refundreportData.map((item) => ({
+        ...item,
+        total: (item.refund_qty * item.price).toFixed(2),
+      }));
+      setrefundData(updatedItems);
+      // setrefundData(RefundReportData.refundreportData);
     } else {
       setrefundData("");
     }
@@ -100,6 +106,19 @@ const RefundSummaryList = ({ data }) => {
         );
         return formattedDate;
       };
+
+      const tableRow = [
+        { type: "num", name: "id", label: "Stocktake" },
+        { type: "str", name: "status", label: "Status" },
+        { type: "num", name: "total_qty", label: "Total Qty" },
+        {
+          type: "num",
+          name: "total_discrepancy_cost",
+          label: "Total Discrepancy Cost",
+        },
+        { type: "date", name: "created_at", label: "Date" },
+      ];
+
       return (
         <>
           <Grid container className="box_shadow_div">
@@ -129,7 +148,8 @@ const RefundSummaryList = ({ data }) => {
                           <p>{priceFormate(data.refund_qty)}</p>
                         </StyledTableCell>
                         <StyledTableCell>
-                          <p>${priceFormate((data.refund_qty * data.price).toFixed(2))}</p>
+                          {/* <p>${priceFormate((data.refund_qty * data.price).toFixed(2))}</p> */}
+                         <p>${priceFormate(data.total)}</p> 
                         </StyledTableCell>
                       </StyledTableRow>
                     </>

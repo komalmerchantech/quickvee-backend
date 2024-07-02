@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { priceFormate } from "../../hooks/priceFormate";
 import sortIcon from "../../Assests/Category/SortingW.svg";
+import Summery from "../../Assests/Category/Summery.svg";
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.black,
@@ -214,7 +215,8 @@ export default function DashboardTables(props) {
                     // onClick={() => handleSummeryPage(row.order_id)}
                     target="_blank"
                   >
-                    Order Summery
+                    {/* Order Summery */}
+                    <img src={Summery} alt="" className="pl-1" />
                   </Link>
                 </StyledTableCell>
               </StyledTableRow>

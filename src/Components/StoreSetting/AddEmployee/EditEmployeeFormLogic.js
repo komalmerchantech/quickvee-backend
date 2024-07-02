@@ -24,6 +24,8 @@ const AddEmployeeFormLogic = ({ employee, employeeList }) => {
     validateZipCode,
   } = Validation();
   const [submitmessage, setsubmitmessage] = useState("");
+  const [loader, setLoader] = useState(false);
+
   // const Navigate = useNavigate();
   const scrollRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
@@ -80,41 +82,41 @@ const AddEmployeeFormLogic = ({ employee, employeeList }) => {
     }));
   }, [employee]);
 
-  const handleEditEmployeeInput = async (event) => {
+  const handleEditEmployeeInput = (event) => {
     let { errors } = values;
     const fieldName = event.target.name;
     const fieldValue = event.target.value;
 
     switch (fieldName) {
       case "firstname":
-        await validateFirstName(fieldValue, errors);
+        validateFirstName(fieldValue, errors);
         break;
       case "lastname":
-        await validateLastName(fieldValue, errors);
+        validateLastName(fieldValue, errors);
         break;
       case "email":
-        await validateEmail(fieldValue, errors);
+        validateEmail(fieldValue, errors);
         break;
       case "phone":
-        await validatePhoneNumber(fieldValue, errors);
+        validatePhoneNumber(fieldValue, errors);
         break;
       case "pin":
-        await validatePinNumber(fieldValue, errors, employeeList);
+        validatePinNumber(fieldValue, errors, employeeList);
         break;
       case "wages":
-        await validateWages(fieldValue, errors);
+        validateWages(fieldValue, errors);
         break;
       case "address_line_1":
-        await Address_line_1(fieldValue, errors);
+        Address_line_1(fieldValue, errors);
         break;
       case "city":
-        await validateCity(fieldValue, errors);
+        validateCity(fieldValue, errors);
         break;
       case "zipcode":
-        await validateZipCode(fieldValue, errors);
+        validateZipCode(fieldValue, errors);
         break;
       case "state":
-        await validateState(fieldValue, errors);
+        validateState(fieldValue, errors);
         break;
       default:
         break;
@@ -194,6 +196,7 @@ const AddEmployeeFormLogic = ({ employee, employeeList }) => {
         token_id: userTypeData?.token_id,
         login_type: userTypeData?.login_type,
       };
+      setLoader(true);
 
       try {
         const response = await axios.post(BASE_URL + ADDEDIT_EMPLOYEE, data, {
@@ -206,7 +209,9 @@ const AddEmployeeFormLogic = ({ employee, employeeList }) => {
         if (response.data.status === true) {
           ToastifyAlert(response?.data?.message, "success");
           dispatch(editEmployee(data));
+          setLoader(false);
           setShowModal(false);
+
           // Navigate("/");
           console.log("22311");
         } else {
@@ -215,6 +220,7 @@ const AddEmployeeFormLogic = ({ employee, employeeList }) => {
           console.log(response.data.message);
           setsubmitmessage(response.data.message);
           // handleSubmitMessage();
+          setLoader(false);
           setShowModal(true);
         }
       } catch (error) {
@@ -241,6 +247,7 @@ const AddEmployeeFormLogic = ({ employee, employeeList }) => {
     showModal,
     setShowModal,
     scrollRef,
+    loader,
   };
 };
 

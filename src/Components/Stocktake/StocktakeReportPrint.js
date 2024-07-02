@@ -95,7 +95,7 @@ const StocktakeReportPrint = () => {
           >
             <Grid item>
               <p className="text-sm font-semibold">
-                Stocktake Number: {singleStocktakeState?.id}
+                Stocktake Number: {singleStocktakeState?.st_id}
               </p>
             </Grid>
           </Grid>
@@ -148,7 +148,7 @@ const StocktakeReportPrint = () => {
         </Grid>
         <Grid container>
           <Grid item xs={6}>
-            <p className="text-lg font-semibold">Supplier: </p>
+            {/* <p className="text-lg font-semibold">Supplier: </p> */}
             <p className="text-sm font-light">
               {/* {singleStocktakeState?.vendorName} */}
             </p>

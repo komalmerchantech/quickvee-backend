@@ -242,7 +242,26 @@ const StoreOrderList = (props) => {
                         {AllStoreOrderDataState?.StoreOrderData.map(
                           (StoreData, index) => (
                             <StyledTableRow key={StoreData.id}>
-                              <StyledTableCell>
+                              {
+                                StoreData.cname || StoreData.email || StoreData.delivery_phn ? 
+                                <StyledTableCell>
+                                   <div className="flex">
+                                      <div className="text-[#000000] order_method capitalize">
+                                        {StoreData.cname.length < 18
+                                          ? StoreData.cname
+                                          : StoreData.cname.slice(0, 18) + `...` ||
+                                            ""}
+                                      </div>
+                                    </div>
+                                    <div className="text-[#818181] lowercase">
+                                      {StoreData.email || ""}
+                                    </div>
+                                    <div className="text-[#818181]">
+                                      {StoreData.delivery_phn || ""}
+                                    </div>
+                                </StyledTableCell>: <StyledTableCell>-</StyledTableCell>
+                              }
+                              {/* <StyledTableCell>
                                 <div className="flex">
                                   <div className="text-[#000000] order_method capitalize">
                                     {StoreData.cname.length < 18
@@ -251,16 +270,13 @@ const StoreOrderList = (props) => {
                                         ""}
                                   </div>
                                 </div>
-                                {/* <div className="text-[#818181]">
-                                  ID - {StoreData.id}
-                                </div> */}
                                 <div className="text-[#818181] lowercase">
                                   {StoreData.email || ""}
                                 </div>
                                 <div className="text-[#818181]">
                                   {StoreData.delivery_phn || ""}
                                 </div>
-                              </StyledTableCell>
+                              </StyledTableCell> */}
                               <StyledTableCell>
                                 <div className="text-[#000000] order_method capitalize">
                                   {formatDateTime(StoreData.date_time)}

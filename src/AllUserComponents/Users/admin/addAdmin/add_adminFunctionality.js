@@ -40,7 +40,7 @@ export default function Add_adminFunctionality({ setVisible }) {
         value.trim() === ""
           ? `Owner Name is required`
           : value[0] === " "
-            ? `The ${name} field cannot start with a space`
+            ? `Owner Name cannot start with a space`
             : "";
     }
     if (name === "email") {
@@ -48,7 +48,7 @@ export default function Add_adminFunctionality({ setVisible }) {
         value === ""
           ? `Email is required`
           : !emailRegex.test(value)
-            ? `Please give valid ${name} field`
+            ? `Please enter a valid ${name}`
             : "";
       //  await emailValidate(value)
     }
@@ -58,8 +58,7 @@ export default function Add_adminFunctionality({ setVisible }) {
     if (name === "phone") {
       const numericValue = value.replace(/[^0-9]/g, "");
       if (numericValue == "") {
-        errors[name] = "";
-        // errors[name] = `Please fill in the ${name} field`;
+        errors[name] = `Phone is required`;
       } else if (numericValue.length !== 10) {
         errors[name] = "Phone number must be 10 digits";
       } else {
@@ -183,10 +182,10 @@ export default function Add_adminFunctionality({ setVisible }) {
       errors.password = "Password is required";
       formIsValid = false;
     }
-    // if (addAdminData.phone === "") {
-    //   errors.phone = "Please fill in the phone field";
-    //   formIsValid = false;
-    // }
+    if (addAdminData.phone === "") {
+      errors.phone = "Phone is required";
+      formIsValid = false;
+    }
 
     setAddAdminData({
       ...addAdminData,

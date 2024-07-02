@@ -87,7 +87,6 @@ import AddCategory from "../Category/AddCategory";
 import AddCoupon from "../Coupons/AddCoupon";
 import AddVendors from "../Vendors/AddVendors";
 import NeedHelp from "../NeedHelp/NeedHelp";
-
 const LeftSide = ({ visible }) => {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -131,6 +130,8 @@ const LeftSide = ({ visible }) => {
           {visible === "product-add" && <AddProducts />}
           {visible === "product-edit" && <AddProducts />}
           {visible === "product-sales" && <ProductSalesReport />}
+          {visible === "edit-varient" && <AddProducts />}
+
 
           {visible === "info" && <Info />}
           {visible === "need_help" && <NeedHelp />}

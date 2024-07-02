@@ -128,7 +128,7 @@ const EditAdminFunctionality = (handleClick) => {
         value.trim() === ""
           ? `Owner Name is required`
           : value[0] === " "
-            ? `The ${name} field cannot start with a space`
+            ? `Owner Name cannot start with a space`
             : "";
     }
     if (name == "email") {
@@ -137,13 +137,13 @@ const EditAdminFunctionality = (handleClick) => {
         value === ""
           ? `Email is required`
           : !emailRegex.test(value)
-            ? "Please fill valid email"
+            ? "Please enter a valid email"
             : "";
     }
     if (name === "phone") {
       const numericValue = value.replace(/[^0-9]/g, "");
       if (numericValue == "") {
-        updatedErrors[name] = "";
+        updatedErrors[name] = `Phone is required`;
       } else if (numericValue.length !== 10) {
         updatedErrors[name] = "Phone number must be 10 digits";
       } else {

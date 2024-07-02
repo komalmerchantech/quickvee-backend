@@ -49,7 +49,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const DetailsSaleReport = ({ data }) => {
   const dispatch = useDispatch();
 
-  const { handleCoockieExpire } = PasswordShow();
+  const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
   const {
     LoginGetDashBoardRecordJson,
     LoginAllStore,
@@ -87,8 +87,8 @@ const DetailsSaleReport = ({ data }) => {
         await dispatch(fetchdetailCategorySaleData(NewData)).unwrap();
       }
     } catch (error) {
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
-      dispatch(getAuthInvalidMessage("your session has been expired"));
     }
   };
 

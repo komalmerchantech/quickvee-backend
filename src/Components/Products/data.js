@@ -117,13 +117,13 @@ export const bulkInstantPo = [
     name: "qty",
     placeholder: "",
     type: "text",
-    label: "Quantity",
+    label: "Enter Quantity Received",
   },
   {
     name: "cost",
     placeholder: "",
     type: "text",
-    label: "Cost",
+    label: "Enter Cost per Item",
   },
 ];
 

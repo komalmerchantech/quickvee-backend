@@ -155,6 +155,7 @@ const ModifyPurchaseOrder = () => {
       puchaseOrderDetail.order_items &&
       puchaseOrderDetail.order_items.length > 0
     ) {
+      // console.log("po items: ", puchaseOrderDetail.order_items);
       const data = puchaseOrderDetail.order_items.map((item) => ({
         ...item,
         order_item_id: item.id,
@@ -301,14 +302,9 @@ const ModifyPurchaseOrder = () => {
       [type]: dayjsDate,
     }));
 
-    const currentDate = dayjs().startOf("day");
-
     if (type === "issuedDate") {
       const defaultIssuedDate = dayjs(puchaseOrderDetail?.issued_date);
       const selectedIssuedDate = dayjs(dayjsDate).startOf("day");
-
-      // const issuedDateLessThanPresentDate =
-      //   selectedIssuedDate.isBefore(currentDate);
 
       const issuedDateLessThanDefaultIssuedDate =
         selectedIssuedDate.isBefore(defaultIssuedDate);
@@ -322,11 +318,6 @@ const ModifyPurchaseOrder = () => {
             : "",
         stockDate: "",
       }));
-
-      // issuedDateLessThanPresentDate &&
-      //           puchaseOrderDetail.is_draft === "0"
-      //         ? "Issued Date cannot be older than present date"
-      //         :
     }
 
     if (type === "stockDate") {
@@ -334,16 +325,12 @@ const ModifyPurchaseOrder = () => {
       const stockDateLessThanIssuedDate = selectedStockDate.isBefore(
         purchaseInfo.issuedDate
       );
-      const stockDateLessThanPresentDate =
-        selectedStockDate.isBefore(currentDate);
 
       setPurchaseInfoErrors((prev) => ({
         ...prev,
         stockDate: stockDateLessThanIssuedDate
           ? "Stock Due date cannot be older than issued date"
-          : stockDateLessThanPresentDate && puchaseOrderDetail.is_draft === "0"
-            ? "Stock Due Date cannot be older than present date"
-            : "",
+          : "",
       }));
     }
   };
@@ -369,7 +356,7 @@ const ModifyPurchaseOrder = () => {
 
   useEffect(() => {
     productOptions(" ");
-  }, [selectedProducts]);
+  }, [selectedProducts.length]);
 
   // generating product options once user searches any product name
   const productOptions = async (inputValue) => {
@@ -393,6 +380,9 @@ const ModifyPurchaseOrder = () => {
       variantId: prod.isvarient === "1" ? prod.var_id : null,
     }));
 
+    // console.log("api data: ", data);
+    // console.log("selectedProducts: ", selectedProducts);
+
     const filterProducts =
       data &&
       data.length > 0 &&
@@ -404,7 +394,10 @@ const ModifyPurchaseOrder = () => {
             const productIdMatching = item.product_id === product.value;
 
             // item is variant
-            if (Number(item.variant_id) > 0) {
+            if (
+              (item.isvarient === "1" || Number(item.variant_id) > 0) &&
+              product.variantId
+            ) {
               const variantIdMatching = item.variant_id === product.variantId;
               return variantIdMatching && productIdMatching;
             } else {
@@ -415,8 +408,9 @@ const ModifyPurchaseOrder = () => {
         return !Boolean(productExists);
       });
 
+    // console.log("filtered Products: ", filterProducts);
+
     return filterProducts;
-    // }
   };
 
   // on selecting a new product from dropdown fetching its details...
@@ -462,6 +456,9 @@ const ModifyPurchaseOrder = () => {
               ? parseFloat(product.costperItem)
               : 0;
 
+          obj.variant_id = variantId;
+          obj.isvarient = "1";
+
           obj.finalQty = Number(product.quantity) ?? 0;
 
           const updatedData = selectedProducts.map((item, idx) =>
@@ -483,6 +480,7 @@ const ModifyPurchaseOrder = () => {
               ? parseFloat(product.costperItem)
               : 0;
           obj.finalQty = Number(product.quantity) ?? 0;
+          obj.product_id = product.id;
 
           const updatedData = selectedProducts.map((item, idx) =>
             idx === index
@@ -589,6 +587,7 @@ const ModifyPurchaseOrder = () => {
   // modifying purchase order api
   const modifyPurchaseOrder = async () => {
     const { issuedDate, stockDate, selectedVendor, email } = purchaseInfo;
+
     if (selectedProducts.length <= 0) {
       ToastifyAlert("No Products to update!", "error");
       return;
@@ -621,7 +620,10 @@ const ModifyPurchaseOrder = () => {
             : Number(prod.variant_id) > 0
               ? prod.variant_id
               : "",
-          required_qty: prod.newQty.toString(),
+          required_qty:
+            prod?.recieved_status && prod?.recieved_status === "2"
+              ? 0
+              : prod?.newQty.toString(),
           // after_qty: (Number(prod.quantity) + Number(prod.newQty)).toString(),
           after_qty: Number(prod.finalQty).toString(),
           cost_per_item: prod.newPrice.toString(),
@@ -631,10 +633,6 @@ const ModifyPurchaseOrder = () => {
           order_item_id: prod.order_item_id ? prod.order_item_id : "",
           recieved_status: prod?.recieved_status ? prod?.recieved_status : "0",
         }));
-
-        // console.log("selectedProducts: ", selectedProducts);
-        // console.log("orderItems: ", orderItems);
-        // return;
 
         const orderItemsObject = orderItems?.reduce((acc, curr, index) => {
           acc[index] = curr;
@@ -657,11 +655,13 @@ const ModifyPurchaseOrder = () => {
           "issue_date",
           dayjs(purchaseInfo?.issuedDate).format("YYYY-MM-DD")
         );
+
         formData.append(
           "stock_date",
           stockDate ? stockDate?.format("YYYY-MM-DD") : "0000-00-00"
         );
         formData.append("reference", purchaseInfo?.reference);
+        formData.append("received_status", puchaseOrderDetail?.received_status);
         formData.append("is_draft", 0);
         formData.append(
           "created_at",
@@ -940,11 +940,11 @@ const ModifyPurchaseOrder = () => {
                     />
                   </DemoContainer>
                 </LocalizationProvider>
-                {/* {purchaseInfoErrors.stockDate && (
+                {purchaseInfoErrors.stockDate && (
                   <p className="error-message">
                     {purchaseInfoErrors.stockDate}
                   </p>
-                )} */}
+                )}
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
                 <label>Reference</label>
@@ -1090,7 +1090,10 @@ const ModifyPurchaseOrder = () => {
                             }}
                             variant="outlined"
                             size="small"
-                            disabled={product.recieved_status === "2"}
+                            disabled={
+                              product.recieved_status === "2" ||
+                              product.recieved_status === "1"
+                            }
                           />
                           {product.priceError && (
                             <p className="error-message">

@@ -68,7 +68,9 @@ const AddNewStocktake = ({
   );
 
   const [singleStocktakeState, setSingleStocktakeState] = useState();
-
+  const [deletedSingleStocktakeState, setDeletedSingleStocktakeState] =
+    useState([]);
+  console.log("deletedSingleStocktakeState", deletedSingleStocktakeState);
   const [gotDatafromPo, setDataFromPo] = useState();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -171,12 +173,28 @@ const AddNewStocktake = ({
 
     const res = await dispatch(fetchProductsData(name_data));
     setSelectedProducts(res.payload);
-    const data = res.payload?.map((prod) => ({
-      label: prod.title,
-      value: prod.var_id || prod.id,
-      variantId: prod.isvarient === "1" ? prod.var_id : null,
-      prodId: prod.id,
-    }));
+    // console.log(res.payload);
+    const data = res.payload
+      ?.map((prod) => ({
+        label: prod.title,
+        value: prod.var_id || prod.id,
+        variantId: prod.isvarient === "1" ? prod.var_id : null,
+        prodId: prod.id,
+      }))
+      .filter((prod) => {
+        const productFound = stocktake_items?.find((product) => {
+          // console.log("product.product_id", product.variant_id);
+          // console.log("prod.variantId", prod.variantId);
+          const a =
+            (product?.variant &&
+              product.variant_id === prod.variantId &&
+              product.variant_id === prod.value) ||
+            (!product.variant && product.product_id === prod.value);
+          return a;
+        });
+
+        return !productFound;
+      });
 
     return data;
   };
@@ -256,83 +274,82 @@ const AddNewStocktake = ({
       return;
     }
 
-    try {
-      const { token, ...otherUserData } = userTypeData;
-      const filteredStocktakeItems = singleStocktakeState.stocktake_item.filter(
-        (_, i) => i !== deleteCategoryId
-      );
+    // try {
+    const { token, ...otherUserData } = userTypeData;
+    const filteredStocktakeItems = singleStocktakeState.stocktake_item.filter(
+      (_, i) => i !== deleteCategoryId
+    );
 
-      const total_qty = filteredStocktakeItems.reduce(
-        (sum, item) => sum + Number(item.new_qty || 0),
-        0
-      );
-      const total_discrepancy_cost = filteredStocktakeItems.reduce(
-        (sum, item) => sum + Number(item.discrepancy_cost || 0),
-        0
-      );
-      const total_discrepancy = filteredStocktakeItems.reduce(
-        (sum, item) => sum + Number(item.discrepancy || 0),
-        0
-      );
+    const total_qty = filteredStocktakeItems.reduce(
+      (sum, item) => sum + Number(item.new_qty || 0),
+      0
+    );
+    const total_discrepancy_cost = filteredStocktakeItems.reduce(
+      (sum, item) => sum + Number(item.discrepancy_cost || 0),
+      0
+    );
+    const total_discrepancy = filteredStocktakeItems.reduce(
+      (sum, item) => sum + Number(item.discrepancy || 0),
+      0
+    );
 
-      // Check if the item to be deleted is in the original stocktake_item list
-      const itemToDelete = stocktake_items[deleteCategoryId];
+    // Check if the item to be deleted is in the original stocktake_item list
+    const itemToDelete = stocktake_items[deleteCategoryId];
 
-      const isOriginalItem = singleStocktakeState.stocktake_item.some(
-        (item) => item.id === itemToDelete.stocktake_item_id
-      );
+    const isOriginalItem = singleStocktakeState.stocktake_item.some(
+      (item) => item.id === itemToDelete.stocktake_item_id
+    );
 
-      if (isOriginalItem) {
-        const formData = {
-          merchant_id: merchant_id,
-          stocktake_id: singleStocktakeState.id,
-          stocktake_item_id: itemToDelete.stocktake_item_id,
-          total_qty,
-          total_discrepancy,
-          total_discrepancy_cost: total_discrepancy_cost.toFixed(2),
-        };
+    if (isOriginalItem) {
+      const formData = {
+        merchant_id: merchant_id,
+        stocktake_id: singleStocktakeState.id,
+        stocktake_item_id: itemToDelete.stocktake_item_id,
+        total_qty,
+        total_discrepancy,
+        total_discrepancy_cost: total_discrepancy_cost.toFixed(2),
+      };
+      setDeletedSingleStocktakeState([
+        ...deletedSingleStocktakeState,
+        formData,
+      ]);
+      // const response = await axios.post(
+      //   BASE_URL + "Stocktake_react_api/delete_stocktake_item",
+      //   { ...formData, ...otherUserData },
+      //   {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //   }
+      // );
 
-        const response = await axios.post(
-          BASE_URL + "Stocktake_react_api/delete_stocktake_item",
-          { ...formData, ...otherUserData },
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+      // if (response.data.status) {
+      const newList = stocktake_items.filter((_, i) => i !== deleteCategoryId);
+      // console.log(stocktake_items.length);
+      setProductList(newList);
+      setSingleStocktakeState({
+        ...singleStocktakeState,
+        stocktake_item: filteredStocktakeItems,
+        total_qty: total_qty,
+        total_discrepancy: total_discrepancy,
+        total_discrepancy_cost: total_discrepancy_cost,
+      });
+      // setProductList(newList);
+      ToastifyAlert("Deleted Successfully", "success");
+      // } else {
+      //   console.log("Product Not available!");
+      //   ToastifyAlert(response.data.message, "error");
+      // }
+    } else {
+      // If the item is newly added, just remove it from the list
 
-        if (response.data.status) {
-          const newList = stocktake_items.filter(
-            (_, i) => i !== deleteCategoryId
-          );
-          console.log(stocktake_items.length);
-          setProductList(newList);
-          setSingleStocktakeState({
-            ...singleStocktakeState,
-            stocktake_item: filteredStocktakeItems,
-            total_qty: total_qty,
-            total_discrepancy: total_discrepancy,
-            total_discrepancy_cost: total_discrepancy_cost,
-          });
-          // setProductList(newList);
-          ToastifyAlert("Deleted Successfully", "success");
-        } else {
-          console.log("Product Not available!");
-          ToastifyAlert(response.data.message, "error");
-        }
-      } else {
-        // If the item is newly added, just remove it from the list
-
-        const newList = stocktake_items.filter(
-          (_, i) => i !== deleteCategoryId
-        );
-        setProductList(newList);
-      }
-    } catch (e) {
-      console.log("e: ", e);
+      const newList = stocktake_items.filter((_, i) => i !== deleteCategoryId);
+      setProductList(newList);
     }
+    // } catch (e) {
+    //   console.log("e: ", e);
+    // }
 
     setDeleteCategoryId(null);
     setDeleteModalOpen(false);
@@ -345,7 +362,10 @@ const AddNewStocktake = ({
       const currentQty = updatedList[index].current_qty;
       const newQty = value;
       const unitPrice = updatedList[index]?.price;
-      const discrepancy = newQty ? newQty - currentQty : 0;
+      const parsedCurrentQty = Math.abs(parseInt(currentQty, 10));
+      const discrepancy = newQty
+        ? parseInt(newQty) - parseInt(parsedCurrentQty)
+        : 0;
       const discrepancyCost = discrepancy * unitPrice;
 
       updatedList[index] = {
@@ -370,17 +390,17 @@ const AddNewStocktake = ({
     });
   };
   const handleOnChangeSelectDropDown = async (productId, variantId, index) => {
-    const productExists = stocktake_items.some((item) =>
-      item.variant !== ""
-        ? item.variant_id === variantId
-        : item.product_id === productId
-    );
+    // const productExists = stocktake_items.some((item) =>
+    //   item.variant !== ""
+    //     ? item.variant_id === variantId
+    //     : item.product_id === productId
+    // );
 
-    if (productExists) {
-      showModal("Product is already added.");
+    // if (productExists) {
+    //   showModal("Product is already added.");
 
-      return;
-    }
+    //   return;
+    // }
     try {
       // const formData = new FormData();
       // formData.append("merchant_id", merchant_id);
@@ -495,56 +515,74 @@ const AddNewStocktake = ({
       return;
     }
     if (validate()) {
-      const total_qty = stocktake_items.reduce(
-        (sum, item) => sum + Number(item.new_qty || 0),
-        0
-      );
-      const total_discrepancy_cost = stocktake_items.reduce(
-        (sum, item) => sum + Number(item.discrepancy_cost || 0),
-        0
-      );
-      const total_discrepancy = stocktake_items.reduce(
-        (sum, item) => sum + Number(item.discrepancy || 0),
-        0
-      );
-      console.log("total_discrepancy", total_discrepancy);
-      const padToTwoDigits = (num) => num.toString().padStart(2, "0");
-      const formatDateTime = (date) => {
-        const year = date.getFullYear();
-        const month = padToTwoDigits(date.getMonth() + 1);
-        const day = padToTwoDigits(date.getDate());
-        const hours = padToTwoDigits(date.getHours());
-        const minutes = padToTwoDigits(date.getMinutes());
-        const seconds = padToTwoDigits(date.getSeconds());
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-      };
-      const datetime = formatDateTime(new Date());
-      const numberParseTofloat = stocktake_items.map((item) => {
-        return { ...item, discrepancy: parseFloat(item.discrepancy) };
-      });
-      console.log("numberParseTofloat", numberParseTofloat);
-      const updatedStocktakeItem = numberParseTofloat?.reduce(
-        (acc, curr, index) => {
-          acc[index] = curr;
-          return acc;
-        },
-        {}
-      );
-      console.log("total_discrepancy inside");
-      const stocktakeData = {
-        merchant_id: merchant_id, //
-        total_qty,
-        total_discrepancy_cost: total_discrepancy_cost.toFixed(2),
-        total_discrepancy, //
-        status: stocktakeStatus,
-        datetime: datetime,
-        stocktake_items: JSON.stringify(updatedStocktakeItem),
-        stocktake_id: singleStocktakeState ? singleStocktakeState.id : "0", //
-      };
-
       try {
-        setLoader(true);
         const { token, ...otherUserData } = userTypeData;
+        await Promise.all(
+          deletedSingleStocktakeState.map(async (stocktake) => {
+            const response = axios.post(
+              BASE_URL + "Stocktake_react_api/delete_stocktake_item",
+              { ...stocktake, ...otherUserData },
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            if (response.status === 200) {
+            }
+          })
+        );
+
+        const total_qty = stocktake_items.reduce(
+          (sum, item) => sum + Number(item.new_qty || 0),
+          0
+        );
+        const total_discrepancy_cost = stocktake_items.reduce(
+          (sum, item) => sum + Number(item.discrepancy_cost || 0),
+          0
+        );
+        const total_discrepancy = stocktake_items.reduce(
+          (sum, item) => sum + Number(item.discrepancy || 0),
+          0
+        );
+        console.log("total_discrepancy", total_discrepancy);
+        const padToTwoDigits = (num) => num.toString().padStart(2, "0");
+        const formatDateTime = (date) => {
+          const year = date.getFullYear();
+          const month = padToTwoDigits(date.getMonth() + 1);
+          const day = padToTwoDigits(date.getDate());
+          const hours = padToTwoDigits(date.getHours());
+          const minutes = padToTwoDigits(date.getMinutes());
+          const seconds = padToTwoDigits(date.getSeconds());
+          return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        };
+        const datetime = formatDateTime(new Date());
+        const numberParseTofloat = stocktake_items.map((item) => {
+          return { ...item, discrepancy: parseFloat(item.discrepancy) };
+        });
+        console.log("numberParseTofloat", numberParseTofloat);
+        const updatedStocktakeItem = numberParseTofloat?.reduce(
+          (acc, curr, index) => {
+            acc[index] = curr;
+            return acc;
+          },
+          {}
+        );
+        console.log("total_discrepancy inside");
+        const stocktakeData = {
+          merchant_id: merchant_id, //
+          total_qty,
+          total_discrepancy_cost: total_discrepancy_cost.toFixed(2),
+          total_discrepancy, //
+          status: stocktakeStatus,
+          datetime: datetime,
+          stocktake_items: JSON.stringify(updatedStocktakeItem),
+          stocktake_id: singleStocktakeState ? singleStocktakeState.id : "0", //
+        };
+
+        setLoader(true);
+        // const { token, ...otherUserData } = userTypeData;
         const response = await axios.post(
           BASE_URL + CREATE_UPDATE_STOCKTAKE,
           { ...stocktakeData, ...otherUserData },
@@ -664,7 +702,9 @@ const AddNewStocktake = ({
                     return (
                       <>
                         <StyledTableRow key={index}>
-                          <StyledTableCell sx={{ width: "40%" }}>
+                          <StyledTableCell
+                            sx={{ width: "40%", verticalAlign: "top" }}
+                          >
                             <div style={{ position: "relative", zIndex: 100 }}>
                               {singleStocktakeState?.stocktake_item[index]
                                 ?.product_id &&
@@ -693,18 +733,21 @@ const AddNewStocktake = ({
                                 />
                               )}
                               {errorMessages[index]?.product_name && (
-                                <div className="error-message">
+                                <div className="error-message-stocktake">
                                   {errorMessages[index].product_name}
                                 </div>
                               )}
                             </div>
                           </StyledTableCell>
-                          <StyledTableCell>
+                          <StyledTableCell sx={{ verticalAlign: "top" }}>
                             {product.current_qty}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ width: "15%" }}>
+                          <StyledTableCell
+                            sx={{ width: "20%", verticalAlign: "top" }}
+                          >
                             <BasicTextFields
                               value={product.new_qty}
+                              maxLength={6}
                               onChangeFun={(e) => {
                                 handleNewQtyChange(e, index);
                               }}
@@ -712,26 +755,31 @@ const AddNewStocktake = ({
                               autoComplete={false}
                             />
                             {errorMessages[index]?.new_qty && (
-                              <div className="error">
+                              <div className="error-message-stocktake">
                                 {errorMessages[index].new_qty}
                               </div>
                             )}
                           </StyledTableCell>
-                          <StyledTableCell>
+                          <StyledTableCell sx={{ verticalAlign: "top" }}>
                             {product.discrepancy}
                           </StyledTableCell>
-                          <StyledTableCell>{product.upc}</StyledTableCell>
+                          <StyledTableCell sx={{ verticalAlign: "top" }}>
+                            {product.upc}
+                          </StyledTableCell>
 
-                          <StyledTableCell>
-                            {singleStocktakeState?.stocktake_item.length ===
-                              1 &&
-                            (singleStocktakeState?.stocktake_item[0]?.variant
-                              .length > 0
-                              ? singleStocktakeState?.stocktake_item[0]
-                                  ?.variant_id === product?.variant_id
-                              : singleStocktakeState?.stocktake_item[0]
-                                  ?.product_id ===
-                                product?.product_id) ? null : (
+                          <StyledTableCell sx={{ verticalAlign: "top" }}>
+                            {
+                            // singleStocktakeState?.
+                            stocktake_items.length === 1 
+                            //   &&
+                            // (singleStocktakeState?.stocktake_item[0]?.variant
+                            //   .length > 0
+                            //   ? singleStocktakeState?.stocktake_item[0]
+                            //       ?.variant_id === product?.variant_id
+                            //   : singleStocktakeState?.stocktake_item[0]
+                            //       ?.product_id ===
+                            //     product?.product_id) 
+                                ? null : (
                               <img
                                 src={DeleteIcon}
                                 onClick={() => handleDeleteProduct(index)}
@@ -761,14 +809,14 @@ const AddNewStocktake = ({
               <Grid item>
                 <button
                   onClick={handleCancelBtn}
-                  className="quic-btn quic-btn-cancle"
+                  className="quic-btn quic-btn-cancle w-32"
                 >
                   Cancel
                 </button>
               </Grid>
               <Grid item>
                 <button
-                  className="quic-btn quic-btn-save"
+                  className="quic-btn quic-btn-save w-32"
                   onClick={handleAddProduct}
                   //   disabled={loader}
                 >
@@ -802,7 +850,7 @@ const AddNewStocktake = ({
               </Grid>
               <Grid item>
                 <button
-                  className="quic-btn quic-btn-save w-36"
+                  className="quic-btn quic-btn-save w-32"
                   onClick={() => {
                     handleCreateStocktake("0");
                   }}

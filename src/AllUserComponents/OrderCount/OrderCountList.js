@@ -77,6 +77,7 @@ const OrderCountList = () => {
   const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
 
   const handleSubmitData = async () => {
+    console.log("Dzvxc")
     if (
       selectedStartDate &&
       selectedEndDate &&
@@ -134,8 +135,12 @@ const OrderCountList = () => {
           // Cleanup: remove the anchor element and revoke the Blob URL
           document.body.removeChild(a);
           URL.revokeObjectURL(fileUrl);
-          setLoader(false);
-          ToastifyAlert("Download Successfully", "success")
+
+          setTimeout(() => {
+            setLoader(false);
+            ToastifyAlert("Download Successfully", "success")
+          }, 2000);
+          // setLoader(false);
         }
       } catch (error) {
         handleCoockieExpire();
@@ -456,9 +461,7 @@ const OrderCountList = () => {
           <button
             className="save_btn attributeUpdateBTN"
             onClick={handleSubmitData}
-            disabled={setTimeout(()=>{
-              
-            })}
+            disabled={loader}
           >
             {loader ? (
               <>

@@ -80,17 +80,16 @@ const OnlineTableViewData = (props) => {
   const dispatch = useDispatch();
   // const debouncedValue = useDebounce(searchId);
   useEffect(() => {
-    const transactionType = (type)=>{
-      if(type === "Cash Payment"){
-        return "Cash"
+    const transactionType = (type) => {
+      if (type === "Cash Payment") {
+        return "Cash";
       }
-      if(type === "Card Payment"){
-        return "Online"
+      if (type === "Card Payment") {
+        return "Online";
+      } else {
+        return type;
       }
-      else{
-        return type
-      }
-    }
+    };
     const fetchData = async () => {
       if (props?.selectedDateRange?.start_date) {
         let data = {
@@ -126,17 +125,16 @@ const OnlineTableViewData = (props) => {
 
   useEffect(() => {
     setCurrentPage(1);
-    const transactionType = (type)=>{
-      if(type === "Cash Payment"){
-        return "Cash"
+    const transactionType = (type) => {
+      if (type === "Cash Payment") {
+        return "Cash";
       }
-      if(type === "Card Payment"){
-        return "Online"
+      if (type === "Card Payment") {
+        return "Online";
+      } else {
+        return type;
       }
-      else{
-        return type
-      }
-    }
+    };
     dispatch(
       getOrderListCount({
         merchant_id: props.merchant_id, //
@@ -512,34 +510,60 @@ const OnlineTableViewData = (props) => {
           // Update the local state with the updated order data
           setAllOnlineStoreOrders((prevState) => {
             // Find the index of the order to update
-            const updatedStatusListItem  = prevState.find((order)=>
-              order.order_id === deleteCategoryId.orderId
-            )
-            console.log("updateOrder", updatedStatusListItem)
-            
-            const index = prevState.findIndex(
+            const updatedStatusListItem = prevState.find(
               (order) => order.order_id === deleteCategoryId.orderId
             );
-            // console.log("setAllOnlineStoreOrders",index)
-            
-            if (index !== -1) {
-              // Create a copy of the order object
-              const updatedOrder = { ...prevState[index] };
-
-              // Update the m_status field with the new value
-              updatedOrder.m_status = deleteCategoryId.value;
-
-              // Create a new array with updated order object
-              const updatedOrders = [...prevState];
-              updatedOrders[index] = updatedOrder;
+            console.log("updateOrder", deleteCategoryId.value);
+            if (updatedStatusListItem) {
+              let updatedOrders;
+              if (
+                deleteCategoryId.value === "4" ||
+                deleteCategoryId.value === "5"
+              ) {
+                updatedOrders = prevState.filter(
+                  (order) => order.order_id !== deleteCategoryId.orderId
+                );
+              } else {
+                const updatedOrder = {
+                  ...updatedStatusListItem,
+                  m_status: deleteCategoryId.value,
+                };
+                updatedOrders = prevState.map((order) =>
+                  order.order_id === deleteCategoryId.orderId
+                    ? updatedOrder
+                    : order
+                );
+              }
               ToastifyAlert(res.payload, "success");
-
               return updatedOrders;
             } else {
               ToastifyAlert(res.payload, "error");
               // Order not found, return previous state unchanged
               return prevState;
             }
+            // const index = prevState.findIndex(
+            //   (order) => order.order_id === deleteCategoryId.orderId
+            // );
+            // // console.log("setAllOnlineStoreOrders",index)
+
+            // if (index !== -1) {
+            //   // Create a copy of the order object
+            //   const updatedOrder = { ...prevState[index] };
+
+            //   // Update the m_status field with the new value
+            //   updatedOrder.m_status = deleteCategoryId.value;
+
+            //   // Create a new array with updated order object
+            //   const updatedOrders = [...prevState];
+            //   updatedOrders[index] = updatedOrder;
+            //   ToastifyAlert(res.payload, "success");
+
+            //   return updatedOrders;
+            // } else {
+            //   ToastifyAlert(res.payload, "error");
+            //   // Order not found, return previous state unchanged
+            //   return prevState;
+            // }
           });
         } else {
           // Handle other status codes or errors if needed
@@ -704,9 +728,7 @@ const OnlineTableViewData = (props) => {
                         <StyledTableCell>
                           <button
                             className="flex items-center"
-                            onClick={() =>
-                              sortByItemName("num", "amt")
-                            }
+                            onClick={() => sortByItemName("num", "amt")}
                           >
                             <p>Amount</p>
                             <img src={sortIcon} alt="" className="pl-1" />
@@ -719,13 +741,11 @@ const OnlineTableViewData = (props) => {
                               sortByItemName("srt", "m_status")
                             }
                           > */}
-                            <p>Order Status</p>
-                            {/* <img src={sortIcon} alt="" className="pl-1" /> */}
+                          <p>Order Status</p>
+                          {/* <img src={sortIcon} alt="" className="pl-1" /> */}
                           {/* </button> */}
                         </StyledTableCell>
-                        <StyledTableCell>
-
-                        </StyledTableCell>
+                        <StyledTableCell></StyledTableCell>
                       </TableHead>
                       <TableBody>
                         {allOnlineStoreOrder &&
@@ -763,6 +783,16 @@ const OnlineTableViewData = (props) => {
                                     <StyledTableCell>
                                       <p className="text-[#000000] order_method">
                                         {data.deliver_name || ""}
+                                        {data?.customer_type ? (
+                                          <span className="existignCustomerData">
+                                            ({data?.customer_type})
+                                          </span>
+                                        ) : (
+                                          ""
+                                        )}
+                                      </p>
+                                      <p className="text-[#818181]">
+                                        {data.users_email || ""}
                                       </p>
                                       <p className="text-[#818181]">
                                         {data.delivery_phn || ""}

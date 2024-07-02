@@ -35,6 +35,7 @@ const BulkVendorEdit = ({
   varientIndex,
   modalType,
   handleCloseEditModal,
+  isVarientEdit
 }) => {
   const dispatch = useDispatch();
   const { userTypeData, LoginGetDashBoardRecordJson } = useAuthDetails();
@@ -72,7 +73,8 @@ const BulkVendorEdit = ({
       const formData = new FormData();
       formData.append(
         "single_product",
-        !Boolean(+productData?.isvarient) ? 1 : 0
+        isVarientEdit ? 0:
+        !Boolean(+productData?.isvarient) && !isVarientEdit ? 1 : 0
       );
       formData.append(
         "varient_id",
@@ -149,7 +151,7 @@ const BulkVendorEdit = ({
       "merchant_id",
       LoginGetDashBoardRecordJson?.data?.merchant_id
     );
-    formData.append("single_product", isVarient ? 0 : 1);
+    formData.append("single_product", isVarientEdit ? 0 :  isVarient && !isVarientEdit ? 0 : 1);
     formData.append("login_type", userTypeData?.login_type);
     formData.append("token_id", userTypeData?.token_id);
     formData.append("token", userTypeData?.token);
@@ -176,7 +178,7 @@ const BulkVendorEdit = ({
     const formData = new FormData();
     formData.append(
       "varient_id",
-      !isVarient
+      !isVarient 
         ? productData?.id
         : modalType === "bulk-edit" && Boolean(+productData?.isvarient)
           ? productData?.id
@@ -186,7 +188,7 @@ const BulkVendorEdit = ({
       "merchant_id",
       LoginGetDashBoardRecordJson?.data?.merchant_id
     );
-    formData.append("single_product", isVarient ? 0 : 1);
+    formData.append("single_product", isVarientEdit ? 0 : isVarient && !isVarientEdit ? 0 : 1);
     formData.append("login_type", userTypeData?.login_type);
     formData.append("token_id", userTypeData?.token_id);
     formData.append("token", userTypeData?.token);
@@ -210,7 +212,7 @@ const BulkVendorEdit = ({
 
       formData.append(
         "single_product",
-        !Boolean(+productData?.isvarient) ? 1 : 0
+        isVarientEdit ? 0: !Boolean(+productData?.isvarient) && !isVarientEdit ? 1 : 0
       );
       formData.append(
         "varient_id",
@@ -255,7 +257,6 @@ const BulkVendorEdit = ({
           }
         })
         .catch((err) => {
-          console.log("error for assign vendor", err);
           getUnAutherisedTokenMessage();
         })
         .finally(() => {
@@ -284,7 +285,7 @@ const BulkVendorEdit = ({
       const formData = new FormData();
       formData.append(
         "single_product",
-        !Boolean(+productData?.isvarient) ? 1 : 0
+        isVarientEdit ? 0: !Boolean(+productData?.isvarient) && !isVarientEdit ? 1 : 0
       );
       formData.append(
         "varient_id",
@@ -328,7 +329,7 @@ const BulkVendorEdit = ({
     /// send formData payload when single varient
     formData.append(
       "single_product",
-      !Boolean(+productData?.isvarient) ? 1 : 0
+      isVarientEdit ? 0: !Boolean(+productData?.isvarient) && !isVarientEdit ? 1 : 0
     );
     formData.append(
       "variant_id",
@@ -421,7 +422,7 @@ const BulkVendorEdit = ({
               hideSelectedValue={true}
               hideSelectedList={vendorItems}
               name="name"
-              placeholder="Enter category Name"
+              placeholder="Enter vendor Name"
             />
             <button
               className="quic-btn quic-bulk-vendor-edit"
@@ -477,7 +478,7 @@ const BulkVendorEdit = ({
                           <input
                             type="text"
                             className="vendor-cost-input"
-                            placeholder="$10.00"
+                            placeholder="$ 0.00"
                             name="costPerItem"
                             onChange={(e) =>
                               handleVendorCostPerItem(e, index, row?.id)

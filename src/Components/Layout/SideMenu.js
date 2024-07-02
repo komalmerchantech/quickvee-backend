@@ -93,7 +93,6 @@ const SideMenu = () => {
   );
   const [activeItem, setActiveItem] = useState(currentUrl);
   const [hoveredItem, setHoveredItem] = useState(null);
-  // console.log("hoveredItem",hoveredItem)
   const [currentDropDownItem, activeDropDownItem] = useState(null);
   const [activeNestedItem, setActiveNestedItem] = useState();
   const navigate = useNavigate();
@@ -152,10 +151,7 @@ const SideMenu = () => {
       setMenuItemSwitcher(updatedMenuItems);
     }
   }, [currentUrl, isStoreActive]);
-  // console.log(
-  //   "LoginGetDashBoardRecordJson?.login_type",
-  //   LoginGetDashBoardRecordJson?.login_type
-  // );
+
   useEffect(() => {
     if (LoginGetDashBoardRecordJson?.login_type === "superadmin") {
       setMenuItemSwitcher((menuItems) => [...menuItems]);
@@ -175,10 +171,6 @@ const SideMenu = () => {
       : "/" + segments.slice(0, 2).join("/");
   }
 
-  // console.log(
-  //   "getFirstTwoSegmentsPath",
-  //   getFirstTwoSegmentsPathIsStoreAvtive(activeItem)
-  // );
   return (
     <>
       <div
@@ -234,14 +226,6 @@ const SideMenu = () => {
                               : ""
                         }`}
                       >
-                        {/* {console.log(
-                          "activeItem",
-                          activeItem,
-                          "item.link",
-                          item.link.trim(),
-                          "activeItem === item.link.trim()",
-                          activeItem === item.link.trim()
-                        )} */}
                         {getFirstTwoSegmentsPathIsStoreAvtive(activeItem) ===
                           item.link.trim() || hoveredItem === item.id
                           ? item.activeIcon
@@ -299,17 +283,6 @@ const SideMenu = () => {
                         handleItemClick(item);
                       }}
                     >
-                      {/* {console.log(
-                        "activeItem",
-                        activeItem,
-                        "item.link",
-                        item.link.trim(),
-                        "activeItem === item.link.trim()",
-                        activeItem === item.link.trim(),
-                        hoveredItem === item.id,
-                        "hoveredItem",
-                        hoveredItem
-                      )} */}
                       {/* {activeItem === item.id ? item.activeIcon : item.icon} */}
                       {getFirstTwoSegmentsPath(activeItem) ===
                         item.link.trim() || hoveredItem === item.id
@@ -349,7 +322,6 @@ const DropdownMenuItem = ({
     const foundItem = item?.dropdownItems?.find(
       (item) => item?.link === getFirstTwoSegmentsPath(activeItem)
     );
-    // console.log("foundItem: ",foundItem,"isMenuOpenRedux",isMenuOpenRedux)
 
     if (foundItem) {
       setDropDownItem(foundItem?.link);
@@ -421,7 +393,6 @@ const DropdownMenuItem = ({
                   : ""
               }`}
             >
-              {/* {console.log("activeItem",getFirstTwoSegmentsPath(activeItem)," ===","dropDownItem", dropDownItem,  activeItem === dropDownItem  )} */}
               {getFirstTwoSegmentsPath(activeItem) === dropDownItem ||
               hoveredItem === item.id
                 ? item.activeIcon
@@ -471,7 +442,6 @@ const DropdownMenuItem = ({
           )}
         </div>
       </div>
-      {/* {console.log("isDropdownOpen",isDropdownOpen,"currentDropDownItem",currentDropDownItem,"item.id",item.id)} */}
       {isDropdownOpen && currentDropDownItem === item.id && (
         <div
           onMouseEnter={(e) => {
@@ -1334,6 +1304,26 @@ const SuperAdminMenuItems = [
     ),
     text: "Inventory Export",
     link: "/unapprove/invertory-export",
+  },
+
+  {
+    id: 13,
+    icon: (
+      <img
+        src={InverntoryIcon}
+        alt="labal"
+        className="h-6 w-10 mt-4 mb-4 hoverable-image"
+      />
+    ),
+    activeIcon: (
+      <img
+        src={InvertoryActive}
+        alt="menu-defaults"
+        className="h-6 w-10 mt-4 mb-4"
+      />
+    ),
+    text: "Support Details",
+    link: "/unapprove/support-details",
   },
 
   // {

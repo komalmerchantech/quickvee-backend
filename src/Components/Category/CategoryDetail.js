@@ -23,11 +23,12 @@ import { BASE_URL, SORT_CATOGRY_DATA } from "../../Constants/Config";
 import { useAuthDetails } from "./../../Common/cookiesHelper";
 import { ToastifyAlert } from "../../CommonComponents/ToastifyAlert";
 import DeleteModal from "../../reuseableComponents/DeleteModal";
+import PasswordShow from "../../Common/passwordShow";
 
 const CategoryDetail = ({ seVisible,setProductId }) => {
   const { LoginGetDashBoardRecordJson, LoginAllStore, userTypeData } =
     useAuthDetails();
-
+  const {handleCoockieExpire,getUnAutherisedTokenMessage}=PasswordShow()
   const [allcategories, setallcategories] = useState([]);
   const [reorderedItems, setreorderedItems] = useState([]);
 
@@ -46,11 +47,26 @@ const CategoryDetail = ({ seVisible,setProductId }) => {
 
   // console.log(tokenData)
   useEffect(() => {
-    if (data) {
-      // console.log(data)
-      dispatch(fetchCategoriesData(data));
-    }
+    // if (data) {
+    //   // console.log(data)
+    //   dispatch(fetchCategoriesData(data));
+    // }
+    getfetchCategorieData()
   }, []);
+  const getfetchCategorieData=async()=>{
+    try{
+      let data = {
+        merchant_id: merchant_id,
+        ...userTypeData,
+      };
+      if (data) {
+        await dispatch(fetchCategoriesData(data)).unwrap();
+      }
+    }catch(error){
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
+    }
+  }
 
   useEffect(() => {
     if (
@@ -92,18 +108,23 @@ const CategoryDetail = ({ seVisible,setProductId }) => {
     setDeleteModalOpen(true);
   };
   const confirmDeleteCategory = () => {
-    if(deleteCategoryId){
-      const data = {
-        id: deleteCategoryId,
-        ...userTypeData,
-      };
-      if (data) {
-        dispatch(deleteCategory(data));
-        ToastifyAlert("Deleted Successfully", "success");
+    try {
+      if(deleteCategoryId){
+        const data = {
+          id: deleteCategoryId,
+          ...userTypeData,
+        };
+        if (data) {
+          dispatch(deleteCategory(data));
+          ToastifyAlert("Deleted Successfully", "success");
+        }
       }
+      setDeleteCategoryId(null)
+      setDeleteModalOpen(false);
+    } catch (error) {
+      handleCoockieExpire()
+      getUnAutherisedTokenMessage()
     }
-    setDeleteCategoryId(null)
-    setDeleteModalOpen(false);
   };
 
   // for  Category Status update

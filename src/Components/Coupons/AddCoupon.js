@@ -410,8 +410,7 @@ const AddCoupon = ({ seVisible }) => {
       // return; // Stop further execution
     }
     if (activeTab === "percentage") {
-      if(coupon.discount > "100.00"){
-        console.log("coupon.discount",coupon.discount)
+      if(+coupon.discount > 100){
         setDiscountError("Discount Percentage is cannot exceed 100.00%");
         return
       }
@@ -589,10 +588,10 @@ const AddCoupon = ({ seVisible }) => {
     } else {
       setDiscountError("");
     }
-    if(formattedValue > "100.00"){
+    if(+formattedValue > 100){
       setDiscountError("Discount Percentage is cannot exceed 100.00%");
     }
-    if(formattedValue === "100.00" || formattedValue > "100.00"){  
+    if(+formattedValue === 100 || +formattedValue > 100){  
       setCouponStates({
         ...couponStates,
         online: false,

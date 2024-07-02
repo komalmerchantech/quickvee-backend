@@ -32,6 +32,7 @@ import MainVerifiedMerchantPage from "../Users/VerifiedMerchant/MainVerifiedMerc
 import MainUnverifiedMerchant from "../Users/UnverifeDetails/MainUnverifiedMerchant";
 import AddDefaults from "../Defaults/AddDefaults";
 import NeedHelp from "../../Components/NeedHelp/NeedHelp";
+import MainSupportDetails from "../SupportDetails/MainSupportDetails";
 // verified
 
 const LeftDetailsUsers = ({ visible }) => {
@@ -52,6 +53,7 @@ const LeftDetailsUsers = ({ visible }) => {
       {visible === "product-duplicate" && <MainProduct />}
       {visible === "create_permission" && <MainPermission />}
       {visible === "invertory-export" && <MainInventoryExport />}
+      {visible === "support-details" && <MainSupportDetails />}
       {visible === "merchant-details" && <MainMerchantDetails />}
       {/* manager view */}
       {visible === "manager_view" && <Manager />}

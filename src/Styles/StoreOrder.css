@@ -66,3 +66,13 @@
     width: 100%;
     overflow: hidden;
 }
+.existignCustomerData{
+    color: #0A64F9;
+    /* cursor: pointer; */
+    text-decoration-color: #0A64F9;
+    text-underline-offset: 2px;
+    font-family: CircularSTDMedium !important;
+    font-size: 15px;
+    padding-left: 10px;
+
+}

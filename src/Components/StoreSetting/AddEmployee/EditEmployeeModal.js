@@ -6,6 +6,7 @@ import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import { Box, Modal } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const EditEmployeeModal = ({ employee, states, employeeList }) => {
   // const [open, setOpen] = useState(false);
@@ -38,6 +39,7 @@ const EditEmployeeModal = ({ employee, states, employeeList }) => {
     setShowModal,
     scrollRef,
     setsubmitmessage,
+    loader,
   } = EditEmployeeFormLogic({ employee, employeeList });
 
   const myStyles = {
@@ -317,12 +319,25 @@ const EditEmployeeModal = ({ employee, states, employeeList }) => {
                 ) : (
                   ""
                 )}
-                <div className="q-add-categories-section-middle-footer plr0">
+                <div className="q-add-categories-section-middle-footer plr0 ">
                   <button
                     onClick={handleEditEmployee}
-                    className="quic-btn quic-btn-save"
+                    className="quic-btn quic-btn-save attributeUpdateBTN"
+                    disabled={loader}
                   >
-                    Update
+                    {loader ? (
+                      <>
+                        <CircularProgress
+                          color={"inherit"}
+                          className="loaderIcon"
+                          width={15}
+                          size={15}
+                        />
+                        Update
+                      </>
+                    ) : (
+                      "Update"
+                    )}
                   </button>
                   <button
                     onClick={closeModal}

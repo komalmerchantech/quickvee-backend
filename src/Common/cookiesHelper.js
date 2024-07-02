@@ -20,6 +20,7 @@ export const useAuthDetails=()=>{
     const token_id=LoginGetDashBoardRecordJson?.token_id
    const login_type=LoginGetDashBoardRecordJson?.login_type
    const token= LoginGetDashBoardRecordJson?.token
+   const user_id=LoginGetDashBoardRecordJson?.data?.id;
    let userTypeData={token_id,login_type,token}
 //  ------------  username and password save data-----------------
     let UserLoginDataStringFy=Cookies.get('user_auth_record') !==undefined ? Cookies.get('user_auth_record') :[]
@@ -30,5 +31,5 @@ export const useAuthDetails=()=>{
 
 // ---------------------------------------------------------------
    
-    return {LoginGetDashBoardRecordJson,LoginAllStore,userTypeData,GetSessionLogin}
+    return {LoginGetDashBoardRecordJson,LoginAllStore,userTypeData,GetSessionLogin,user_id}
 }

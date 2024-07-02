@@ -125,11 +125,11 @@ function App() {
     }
   }, [currentUrl]);
 
-  useEffect(()=>{
-    if(!location.pathname.includes('products')){
-      dispatch(emptyProduct([]))
+  useEffect(() => {
+    if (!location.pathname.includes("products")) {
+      dispatch(emptyProduct([]));
     }
-  }, [location])
+  }, [location]);
 
   return (
     <>
@@ -215,6 +215,12 @@ function App() {
 
           <Route
             exact
+            path="inventory/products/varient-edit/:id/:varientName"
+            element={<Main visible={"edit-varient"} />}
+          />
+
+          <Route
+            exact
             path="inventory/products/edit/:id"
             element={<Main visible={"product-edit"} />}
           />
@@ -270,14 +276,17 @@ function App() {
             element={<Main visible={"attributes"} />}
           />
 
-         
           <Route
             exact
             path="/loyalty-program"
             element={<Main visible={"loyalty-program"} />}
           />
           <Route exact path="/coupons" element={<Main visible={"coupons"} />} />
-          <Route exact path="/coupons/add" element={<Main visible={"add-coupons"} />} />
+          <Route
+            exact
+            path="/coupons/add"
+            element={<Main visible={"add-coupons"} />}
+          />
           <Route
             exact
             path="/coupons-add"
@@ -289,7 +298,11 @@ function App() {
             element={<Main visible={"coupons-edit-cop"} />}
           />
           <Route exact path="/vendors" element={<Main visible={"vendors"} />} />
-          <Route exact path="/vendors/add" element={<Main visible={"add-vendors"} />} />
+          <Route
+            exact
+            path="/vendors/add"
+            element={<Main visible={"add-vendors"} />}
+          />
           <Route
             exact
             path="/vendors-add"
@@ -594,7 +607,7 @@ function App() {
             path="/users/manager_view"
             element={<Main visible={"manager_view"} />}
           />
-           <Route
+          <Route
             exact
             path="/import-data"
             element={<Main visible={"import-data"} />}
@@ -704,6 +717,11 @@ function App() {
             exact
             path="/unapprove/invertory-export"
             element={<Main visible={"invertory-export"} />}
+          />
+           <Route
+            exact
+            path="/unapprove/support-details"
+            element={<Main visible={"support-details"} />}
           />
           <Route
             exact

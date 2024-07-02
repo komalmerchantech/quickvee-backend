@@ -21,9 +21,11 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import { ToastifyAlert } from "../../../CommonComponents/ToastifyAlert";
 import DeleteModal from "../../../reuseableComponents/DeleteModal";
-
+import CircularProgress from "@mui/material/CircularProgress";
+import PasswordShow from "../../../Common/passwordShow";
 const EmployeeList = ({ setVisible, setEmployeeId }) => {
   const employeeListDataState = useSelector((state) => state.employeelistData);
+  const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
   const [employeeList, setemployeeList] = useState([]);
   const dispatch = useDispatch();
   // const [allemployee, setallemployee] = useState([]);
@@ -49,8 +51,22 @@ const EmployeeList = ({ setVisible, setEmployeeId }) => {
     scrollRef,
     setsubmitmessage,
     handleKeyPress,
+    loader,
     // handleBlur,
   } = AddEmployeeFormLogic({ employeeList });
+
+  const getEmployeeListData = async (data) => {
+    try {
+      await dispatch(fetchEmployeeListsData(data)).unwrap();
+    } catch (error) {
+      if (error.status == 401) {
+        getUnAutherisedTokenMessage();
+        handleCoockieExpire();
+      } else if (error.status == "Network Error") {
+        alert("Please check your internet connection and try again.");
+      }
+    }
+  };
 
   useEffect(() => {
     let data = {
@@ -58,7 +74,7 @@ const EmployeeList = ({ setVisible, setEmployeeId }) => {
       ...userTypeData,
     };
     if (data) {
-      dispatch(fetchEmployeeListsData(data));
+      getEmployeeListData(data);
     }
   }, []);
 
@@ -596,10 +612,22 @@ const EmployeeList = ({ setVisible, setEmployeeId }) => {
                 <div className="q-add-categories-section-middle-footer plr0">
                   <button
                     onClick={handleAddEmployee}
-                    className="quic-btn quic-btn-save"
+                    className="quic-btn quic-btn-save attributeUpdateBTN"
+                    disabled={loader}
                   >
-                    {" "}
-                    Add{" "}
+                    {loader ? (
+                      <>
+                        <CircularProgress
+                          color={"inherit"}
+                          className="loaderIcon"
+                          width={15}
+                          size={15}
+                        />
+                        Add
+                      </>
+                    ) : (
+                      "Add"
+                    )}
                   </button>
                   <button
                     onClick={closeModal}

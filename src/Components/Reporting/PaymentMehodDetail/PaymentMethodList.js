@@ -43,9 +43,9 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const PaymentMethodList = ({ data }) => {
-  console.log("PaymentMethodList",data)
+  console.log("PaymentMethodList", data);
   const dispatch = useDispatch();
-  const { handleCoockieExpire } = PasswordShow();
+  const { handleCoockieExpire, getUnAutherisedTokenMessage } = PasswordShow();
 
   const [paymentReport, setpaymentReport] = useState([]);
 
@@ -63,8 +63,8 @@ const PaymentMethodList = ({ data }) => {
     try {
       await dispatch(fetchPaymentMethodReportData(data)).unwrap();
     } catch (error) {
+      getUnAutherisedTokenMessage();
       handleCoockieExpire();
-      dispatch(getAuthInvalidMessage("your session has been expired"));
     }
   };
 

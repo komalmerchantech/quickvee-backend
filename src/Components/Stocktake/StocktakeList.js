@@ -98,11 +98,17 @@ const StocktakeList = ({
   }, [debouncedValue]);
 
   useEffect(() => {
-    setTotalCount(StocktakeListReducerState.stocktakeListCount);
+    if(!StocktakeListReducerState.loading && StocktakeListReducerState?.stocktakeListCount){
+      setTotalCount(StocktakeListReducerState.stocktakeListCount);
+    }
+  
   }, [StocktakeListReducerState.stocktakeListCount]);
 
   useEffect(() => {
-    setStocktakeList(StocktakeListReducerState?.StocktakeList);
+    if(!StocktakeListReducerState.loading && StocktakeListReducerState?.StocktakeList){
+      setStocktakeList(StocktakeListReducerState?.StocktakeList);
+    }
+    
   }, [StocktakeListReducerState?.StocktakeList]);
 
   const handleSearchInputChange = (value) => {
@@ -175,10 +181,12 @@ const StocktakeList = ({
   const [sortOrder, setSortOrder] = useState("asc");
   const sortByItemName = (type, name) => {
     const updatedList = StocktakeList?.map((item) => {
-      const matchingStatus = stocktalkStatus?.find((itemStatus) => itemStatus?.status === item?.status);
+      const matchingStatus = stocktalkStatus?.find(
+        (itemStatus) => itemStatus?.status === item?.status
+      );
       return {
         ...item,
-        status: matchingStatus ? matchingStatus.title : ""
+        status: matchingStatus ? matchingStatus.title : "",
       };
     });
     const { sortedItems, newOrder } = SortTableItemsHelperFun(
@@ -188,10 +196,12 @@ const StocktakeList = ({
       sortOrder
     );
     const updatedListWithDigit = sortedItems?.map((item) => {
-      const matchingStatus = stocktalkStatus?.find((itemStatus) => itemStatus?.title === item?.status);
+      const matchingStatus = stocktalkStatus?.find(
+        (itemStatus) => itemStatus?.title === item?.status
+      );
       return {
         ...item,
-        status: matchingStatus ? matchingStatus.status : ""
+        status: matchingStatus ? matchingStatus.status : "",
       };
     });
     setStocktakeList(updatedListWithDigit);
@@ -257,8 +267,8 @@ const StocktakeList = ({
             ) : (
               <>
                 {StocktakeListReducerState?.StocktakeList &&
-                Array.isArray(StocktakeListReducerState.StocktakeList) &&
-                StocktakeListReducerState.StocktakeList.length >= 1 ? (
+                Array.isArray(StocktakeListReducerState?.StocktakeList) &&
+                StocktakeListReducerState?.StocktakeList?.length >= 1 ? (
                   <>
                     <TableContainer component={Paper}>
                       <StyledTable aria-label="customized table">
@@ -279,52 +289,67 @@ const StocktakeList = ({
                           ))}
                         </TableHead>
                         <TableBody>
-                          {StocktakeList && StocktakeList?.map((item, index) => {
-                            const statusObj = stocktalkStatus.find(
-                              (itemStatus) => itemStatus.status === item.status
-                            );
-                            return (
-                              <StyledTableRow key={index}>
-                                <StyledTableCell>
-                                  <button
-                                    className="attributeUpdateBTN"
-                                    onClick={() => {
-                                      handleStocktakeIdClick(item.id);
-                                    }}
-                                  >
-                                    {loader && stocltakeId === item.id ? (
-                                      <CircularProgress
-                                        color={"inherit"}
-                                        className=""
-                                        width={15}
-                                        size={15}
-                                      />
-                                    ) : (
-                                      <p className="text-[#0A64F9] cursor-pointer">
-                                        {item.st_id}
-                                      </p>
+                          {StocktakeList &&
+                            StocktakeList?.map((item, index) => {
+                              const statusObj = stocktalkStatus?.find(
+                                (itemStatus) =>
+                                  itemStatus.status === item.status
+                              );
+                              const formatCurrency = (amount) => {
+                                const formattedAmount = Math.abs(
+                                  amount
+                                ).toLocaleString("en-US", {
+                                  style: "currency",
+                                  currency: "USD",
+                                });
+                                return amount < 0
+                                  ? `-${formattedAmount}`
+                                  : formattedAmount;
+                              };
+                              return (
+                                <StyledTableRow key={index}>
+                                  <StyledTableCell>
+                                    <button
+                                      className="attributeUpdateBTN"
+                                      onClick={() => {
+                                        handleStocktakeIdClick(item.id);
+                                      }}
+                                    >
+                                      {loader && stocltakeId === item.id ? (
+                                        <CircularProgress
+                                          color={"inherit"}
+                                          className=""
+                                          width={15}
+                                          size={15}
+                                        />
+                                      ) : (
+                                        <p className="text-[#0A64F9] cursor-pointer">
+                                          {item.st_id}
+                                        </p>
+                                      )}
+                                    </button>
+                                  </StyledTableCell>
+                                  <StyledTableCell>
+                                    <p>
+                                      {statusObj
+                                        ? capitalize(statusObj.title)
+                                        : ""}
+                                    </p>
+                                  </StyledTableCell>
+                                  <StyledTableCell>
+                                    <p>{item.total_qty}</p>
+                                  </StyledTableCell>
+                                  <StyledTableCell>
+                                    {formatCurrency(
+                                      item?.total_discrepancy_cost
                                     )}
-                                  </button>
-                                </StyledTableCell>
-                                <StyledTableCell>
-                                  <p>
-                                    {statusObj
-                                      ? capitalize(statusObj.title)
-                                      : ""}
-                                  </p>
-                                </StyledTableCell>
-                                <StyledTableCell>
-                                  <p>{item.total_qty}</p>
-                                </StyledTableCell>
-                                <StyledTableCell>
-                                  <p>${item.total_discrepancy_cost}</p>
-                                </StyledTableCell>
-                                <StyledTableCell>
-                                  <p>{formatDate(item.created_at)}</p>
-                                </StyledTableCell>
-                              </StyledTableRow>
-                            );
-                          })}
+                                  </StyledTableCell>
+                                  <StyledTableCell>
+                                    <p>{formatDate(item.created_at)}</p>
+                                  </StyledTableCell>
+                                </StyledTableRow>
+                              );
+                            })}
                         </TableBody>
                       </StyledTable>
                     </TableContainer>

@@ -41,8 +41,12 @@ export default function DashboardFunctionality() {
         setDashboardCount(response?.data);
       }
     } catch (error) {
-      getUnAutherisedTokenMessage();
-      handleCoockieExpire();
+      if (error?.response?.status == 401) {
+        getUnAutherisedTokenMessage();
+        handleCoockieExpire();
+      } else if (error?.message == "Network Error") {
+        alert("Please check your internet connection and try again.");
+      }
     }
   };
 
@@ -62,8 +66,12 @@ export default function DashboardFunctionality() {
         setDashboardRecord([]);
       }
     } catch (error) {
-      getUnAutherisedTokenMessage();
-      handleCoockieExpire();
+      if (error?.response?.status == 401) {
+        getUnAutherisedTokenMessage();
+        handleCoockieExpire();
+      } else if (error?.message == "Network Error") {
+        // alert("Please check your internet connection and try again.");
+      }
     }
   };
 

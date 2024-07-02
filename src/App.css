@@ -1228,3 +1228,8 @@ div.q_label_details::after {
 .w-store{
   width: 100px;
 }
+
+.error-message-stocktake{
+  color: red;
+  font-family: "Roboto","Helvetica","Arial",sans-serif !important;
+}

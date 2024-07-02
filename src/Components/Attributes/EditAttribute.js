@@ -28,6 +28,7 @@ const EditDeliveryAddress = ({ attribute, allattributes }) => {
     setShowModal(true);
     setNewAttribute(attribute.title);
     setold_title(attribute.title);
+    setErrorMessage("");
   };
 
   const closeModal = () => {
@@ -59,6 +60,10 @@ const EditDeliveryAddress = ({ attribute, allattributes }) => {
   const handleEditAttribute = async () => {
     if (nameExists) {
       return false;
+    }
+    if (!newAttribute.trim()) {
+      setErrorMessage("Title is required");
+      return;
     }
     const editItem = {
       merchant_id: merchant_id,
