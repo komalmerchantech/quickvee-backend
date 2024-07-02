@@ -1052,14 +1052,14 @@ const menuItems = [
     icon: (
       <img
         src={Loyalty}
-        alt="Loyalty Porogram"
+        alt="Loyalty Program"
         className="h-6 w-10 mt-4 mb-4 hoverable-image"
       />
     ),
     activeIcon: (
       <img src={LoyaltIcon} alt="Import" className="h-6 w-10 mt-4 mb-4 " />
     ),
-    text: "Loyalty Porogram",
+    text: "Loyalty Program",
     link: "/loyalty-program",
   },
 ];
