@@ -55,9 +55,9 @@ const PickupDeliveryDetails = ({
     if (setupDataState?.is_deliver) {
       setIsDelveryEnbale(setupDataState?.is_deliver);
     }
-    if (setupDataState?.cfee_pik) {
+    if (setupDataState?.cfee_pik_price) {
       SetConvenience({
-        target: { value: parseFloat(setupDataState.cfee_pik).toFixed(2) },
+        target: { value: parseFloat(setupDataState.cfee_pik_price).toFixed(2) },
       });
     }
     if (setupDataState?.min_delivery_amt) {
@@ -70,9 +70,9 @@ const PickupDeliveryDetails = ({
       setAmountdelivery(setupDataState.rate_per_miles);
     }
 
-    if (setupDataState?.cfee_del) {
+    if (setupDataState?.cfee_del_price) {
       SetConveniencepik({
-        target: { value: parseFloat(setupDataState.cfee_del).toFixed(2) },
+        target: { value: parseFloat(setupDataState.cfee_del_price).toFixed(2) },
       });
     }
 

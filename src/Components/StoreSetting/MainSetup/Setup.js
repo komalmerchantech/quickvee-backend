@@ -6,7 +6,7 @@ import FlatDelivery from "./FlatDelivery";
 import DelveryPickupDetails from "./DelveryPickupDetails";
 import { useDispatch } from "react-redux";
 import { fetchStoreSettingSetupData } from "../../../Redux/features/SettingSetup/SettingSetupSlice";
-import { Grid } from "@mui/material";
+import { CircularProgress, Grid } from "@mui/material";
 import axios from "axios";
 import {
   BASE_URL,
@@ -40,8 +40,10 @@ const Setup = () => {
   const [delDefTip, setdelDefTip] = useState("");
   const [days, setDays] = useState([]);
   const [lastCloseTimeState, setLastCloseTimeState] = useState(true);
+  const [loader, setLoader] = useState(false);
   const dispatch = useDispatch();
-  const { LoginGetDashBoardRecordJson, userTypeData,user_id } = useAuthDetails();
+  const { LoginGetDashBoardRecordJson, userTypeData, user_id } =
+    useAuthDetails();
   let AuthDecryptDataDashBoardJSONFormat = LoginGetDashBoardRecordJson;
   const merchant_id = AuthDecryptDataDashBoardJSONFormat?.data?.merchant_id;
   const data = {
@@ -160,8 +162,11 @@ const Setup = () => {
       default_tip_pickup: pickDefTip, //
       default_tip_delivery: delDefTip, //
       day_data: JSON.stringify(days),
+      cf_pik:parseFloat(convData) > 0 ? "1": "0", 
+      cf_del:parseFloat(conepikData) >0 ? "1" : "0"
     };
     try {
+      setLoader(true);
       const { token, ...otherUserData } = userTypeData;
       const response = await axios.post(
         BASE_URL + UPDATE_STORE_SETUP,
@@ -175,8 +180,8 @@ const Setup = () => {
       );
       console.log(response);
       if (response.data.status === true) {
-        ToastifyAlert(response.data.msg, "success");
-
+        ToastifyAlert("Updated Successfully", "success");
+        setLoader(false);
         let merchantdata = {
           merchant_id: merchant_id,
         };
@@ -184,17 +189,22 @@ const Setup = () => {
           dispatch(fetchSettingReceiptData(merchantdata));
         }
       } else {
+        setLoader(false);
         ToastifyAlert(response.data.msg, "unsuccess");
       }
     } catch (error) {
       getUnAutherisedTokenMessage();
       handleCoockieExpire();
+      setLoader(false);
     }
   };
 
   return (
     <>
-      <OnlineOrderingPage onlineorderstatus={handleonlineorderstatus} />
+      <OnlineOrderingPage
+        loader={loader}
+        onlineorderstatus={handleonlineorderstatus}
+      />
 
       <StoreWorkingHrs
         days={days}
@@ -218,11 +228,24 @@ const Setup = () => {
         direction="row"
         justifyContent="flex-end"
         alignItems="center"
-        sx={{ pb: 2.5 }}
+        sx={{ mb:0,p:2.5 }}
+
+        className="box_shadow_div p-3"
       >
-        <Grid item>
-          <button class="quic-btn quic-btn-save" onClick={handleUpdateClick}>
-            Update
+        <Grid item >
+          <button
+            class="quic-btn quic-btn-save attributeUpdateBTN w-36"
+            onClick={handleUpdateClick}
+            disabled={loader}
+          >
+            {loader ? (
+              <>
+                <CircularProgress color={"inherit"} className="loaderIcon"  width={15}size={15} />
+                Update
+              </>
+            ) : (
+              "Update"
+            )}
           </button>
         </Grid>
       </Grid>

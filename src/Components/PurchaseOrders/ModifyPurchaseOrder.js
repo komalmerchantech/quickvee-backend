@@ -1021,27 +1021,35 @@ const ModifyPurchaseOrder = () => {
                               </>
                             ) : (
                               <>
-                                <AsyncSelect
-                                  closeMenuOnSelect={true}
-                                  defaultOptions
-                                  styles={customStyles}
-                                  menuPortalTarget={document.body}
-                                  value={{
-                                    label: product.variant
+                                <span
+                                  title={
+                                    product.variant
                                       ? `${product.title} ~ ${product.variant}`
-                                      : `${product.title}`,
-                                    value: product.id,
-                                  }}
-                                  loadOptions={productOptions}
-                                  onChange={(option) => {
-                                    getProductData(
-                                      option.value,
-                                      option.variantId,
-                                      index
-                                    );
-                                  }}
-                                  placeholder="Search Product by Title or UPC"
-                                />
+                                      : `${product.title}`
+                                  }
+                                >
+                                  <AsyncSelect
+                                    closeMenuOnSelect={true}
+                                    defaultOptions
+                                    styles={customStyles}
+                                    menuPortalTarget={document.body}
+                                    value={{
+                                      label: product.variant
+                                        ? `${product.title} ~ ${product.variant}`
+                                        : `${product.title}`,
+                                      value: product.id,
+                                    }}
+                                    loadOptions={productOptions}
+                                    onChange={(option) => {
+                                      getProductData(
+                                        option.value,
+                                        option.variantId,
+                                        index
+                                      );
+                                    }}
+                                    placeholder="Search Product by Title or UPC"
+                                  />
+                                </span>
                                 {product.titleError && (
                                   <p className="error-message">
                                     Please select a Product
